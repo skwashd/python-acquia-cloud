@@ -1,7 +1,9 @@
-from .imports import httplib2, json
-from .connection import Connection
+import os
 import re
 import time
+
+from .imports import httplib2, json
+from .connection import Connection
 
 from six import u
 
@@ -9,6 +11,9 @@ from six import u
 from .version import __version__, __version_info__
 
 from .base import Response, make_acapi_request
+
+def set_proxy_server(proxy_url, proxy_port):
+    Connection.set_proxy_info(proxy_url, proxy_port)
 
 class AcquiaData(object):
 
@@ -268,6 +273,9 @@ class Task(AcquiaResource):
 class User(AcquiaResource):
 
     def drushrc(self):
+        """
+        The json+PHP output of this isn't very useful in python.
+        """
         uri =  ('%s/drushrc' % (self.uri))
         response = make_acapi_request('GET', uri, auth=self.auth)
         return response.content
@@ -286,17 +294,18 @@ class Client(object):
     '''
 
     def __init__(self, user=None, token=None, realm='prod', endpoint='https://cloudapi.acquia.com/v1'):
-
         '''
         Create an Acquia Cloud API REST client.
         '''
+        if not user or not token:
+            user, token = __find_credentials()
+            if not user or not token:
+                raise AcquiaCloudException("Credentials not provided")
 
         self.auth = (user, token)
         self.realm = realm
         self.endpoint = endpoint
 
-        # User endpoints
-        self.user = User(self.generate_uri('me'), self.auth)
 
     def generate_uri(self, path):
         uri = ('%s/%s' % (self.endpoint, path))
@@ -320,3 +329,28 @@ class Client(object):
             sites[name] = Site(site_uri, self.auth)
 
         return sites
+
+    def user(self):
+        """
+        Returns the currently authenticated Cloud API user.
+        """
+        user = User(self.generate_uri('me'), self.auth)
+        return user
+
+    def __find_credentials(environ=None):
+        """
+        Look in the current environment for API credentials
+
+        Lifted from Twilio's twilio-python lib
+
+        :param environ: the environment to check
+        """
+        environment = environ or os.environ
+        try:
+            user = environment["ACQUIA_CLOUD_API_USER"]
+            token = environment["ACQUIA_CLOUD_API_TOKEN"]
+            return user, token
+        except KeyError:
+            return None, None
+
+
