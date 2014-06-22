@@ -1,6 +1,7 @@
-import urllib2
+from .imports import httplib2, json
+from .connection import Connection
 import re
-import json
+import time
 
 from six import u
 
@@ -9,21 +10,137 @@ from .version import __version__, __version_info__
 
 from .base import Response, make_acapi_request
 
-class CloudObject(object):
+class AcquiaData(object):
 
-    def __init__(self, uri, auth):
+    def __init__(self, uri, auth, data=None):
         self.uri = uri
         self.auth = auth
+        self.data = data
+
+    def request(self, uri=None, method='GET', data=None, params=None):
+        if None == uri:
+            uri = self.uri
+
+        return make_acapi_request(method, uri, auth=self.auth, data=data, params=params)
+
+    def task_uri(self, task_data):
+        """
+        This is a horrible hack, but it is needed for now
+        """
+        task_id = int(task_data['id'])
+
+        p = re.compile('/sites/(.*)/envs.*')
+        task_uri = ('%s/%d' % (p.sub('/sites/\g<1>/tasks', self.uri), task_id))
+
+        return task_uri        
+
+
+class AcquiaResource(AcquiaData):
 
     def get(self):
-        response = make_acapi_request('GET', self.uri, auth=self.auth)
-        return response.content
+        if None == self.data:
+          response = self.request()
+          self.data = response.content
+
+        return self.data
+
+class AcquiaList(AcquiaData, dict):
+
+    def __init__(self, uri, auth, *args, **kwargs):
+        AcquiaData.__init__(self, uri, auth)
+        dict.__init__(self, *args, **kwargs)
+
+class Backup(AcquiaResource):
+
+    def delete(self):
+        response = self.request(method='DELETE')
+        return response.ok     
+    
+    def download(self, target_file):
+        """
+        Download a database backup file from the Acquia Cloud API.
+
+        """
+        response = self.request()
+        backup = response.content
+
+        # We do this as make_acapi_request() assumes response is a json string.
+        http = httplib2.Http(
+                proxy_info=Connection.proxy_info(),
+                )
+        resp, content = http.request(backup['link'].encode('ascii', 'ignore'), 'GET')
+
+        file = open(target_file, 'wb')
+        file.write(content)
+        file.close()
+
+        return True
+
+class BackupList(AcquiaList):
+
+    def create(self):
+        response = self.request(method='POST')
+        task_data = response.content
+
+        task_uri = self.task_uri(task_data)
+        task = Task(task_uri, self.auth, task_data)
+
+        while task.pending():
+            time.sleep(3)
+
+        data = task.get()
+        if None == data['completed']:
+            raise Exception('Unable to request backup')
+
+        id = int(json.loads(data['result'])['backupid'])
+        uri = ('%s/%d' % (self.uri, id))
+        backup = Backup(uri, self.auth)
+
+        self.__setitem__(id, backup)
+
+        return backup
 
 
-class Domain(CloudObject):
+class Database(AcquiaResource):
 
-    def add(self):
-        response = make_acapi_request('POST', self.uri, auth=self.auth)
+    def backup(self, id):
+        uri = ('%s/backups/%d' % (self.uri, id))
+        return Backup(uri, self.auth)
+
+    def backups(self):
+        uri = ('%s/backups' % (self.uri))
+
+        backups = BackupList(uri, self.auth)
+
+        response = self.request(uri=uri)
+        for backup in response.content:
+            id = int(backup['id'])
+            backup_uri = ('%s/%d' % (uri, id))
+            backups[id] = Backup(uri, self.auth, data=backup)
+
+        return backups
+    
+    def copy(self, target):
+        # More regex hacks to work around the limitations of the ACAPI.
+        p = re.compile('/envs/(.*)/dbs/(.*)')
+        m = p.search(self.uri)
+        current_env = m.group(1)
+        db = m.group(2)
+
+        move_uri = ('%s/%s' % (p.sub('/dbs/\g<2>/db-copy/\g<1>', self.uri), target))
+
+        response = self.request(uri=move_uri, method='POST')
+        if response.ok:
+            # Another hack, this time to get the URI for the domain.
+            new_uri = self.uri.replace(('/%s/' % (current_env)), ('/%s/' % (target)))
+            return Database(new_uri, self.auth)
+
+        return False
+
+class Domain(AcquiaResource):
+
+    def create(self):
+        response = self.request(method='POST')
         if response.ok:
             return Domain(self.uri, self.auth)
 
@@ -31,11 +148,11 @@ class Domain(CloudObject):
 
     def cache_purge(self):
         uri = ('%s/cache' % (self.uri))
-        response = make_acapi_request('DELETE', uri, auth=self.auth)
+        response = self.request(uri=uri, method='DELETE')
         return response.ok
 
     def delete(self):
-        response = make_acapi_request('DELETE', self.uri, auth=self.auth)
+        response = self.request(method='DELETE')
         return response.ok
 
     def move(self, target):
@@ -51,7 +168,7 @@ class Domain(CloudObject):
 
         data = {'domains': [domain]}
 
-        response = make_acapi_request('POST', move_uri, auth=self.auth, data=data)
+        response = self.request(uri=move_uri, method='POST', data=data)
         if response.ok:
             # Another hack, this time to get the URI for the domain.
             new_uri = self.uri.replace(('/%s/' % (current_env)), ('/%s/' % (target)))
@@ -60,12 +177,27 @@ class Domain(CloudObject):
         return False
 
 
-class Environment(CloudObject):
+class Environment(AcquiaResource):
+    
+    def db(self, name):
+        uri = ('%s/dbs/%s' % (self.uri, name))
+        return Database(uri, self.auth)
+
+    def dbs(self):
+        dbs = {}
+        uri = ('%s/dbs' % (self.uri))
+        response = self.request(uri=uri)
+        for db in response.content:
+            name = db['name'].encode('ascii', 'ignore')
+            db_uri = ('%s/%s' % (uri, name))
+            dbs[name] = Database(db_uri, self.auth, data=db)
+
+        return dbs
 
     def deploy_code(self, path):
         uri = ('%s/code-deploy' % (self.uri))
         params = {'path': path}
-        response = make_acapi_request('POST', uri, auth=self.auth, params=params)
+        response = self.request(uri=uri, method='POST', params=params)
         if response.ok:
             index = self.uri.find('/envs/')
             base_uri = self.uri[:index]
@@ -82,16 +214,16 @@ class Environment(CloudObject):
     def domains(self):
         domains = {}
         uri = ('%s/domains' % (self.uri))
-        response = make_acapi_request('GET', uri, auth=self.auth)
+        response = self.request(uri=uri)
         for domain in response.content:
             name = domain['name'].encode('ascii','ignore')
             domain_uri = ('%s/%s' % (uri, name))
-            domains[name] = Domain(domain_uri, self.auth)
+            domains[name] = Domain(domain_uri, self.auth, data=domain)
 
         return domains
 
 
-class Site(CloudObject):
+class Site(AcquiaResource):
 
     def environment(self, name):
         uri = ('%s/envs/%s' % (self.uri, name))
@@ -100,11 +232,11 @@ class Site(CloudObject):
     def environments(self):
         envs = {}
         uri = ('%s/envs' % (self.uri))
-        response = make_acapi_request('GET', uri, auth=self.auth)
+        response = self.request(uri=uri)
         for env in response.content:
-            name = env['name'].encode('ascii','ignore')
+            name = env['name'].encode('ascii', 'ignore')
             env_uri = ('%s/%s' % (uri, name))
-            envs[name] = Environment(env_uri, self.auth)
+            envs[name] = Environment(env_uri, self.auth, data=env)
 
         return envs
      
@@ -115,19 +247,25 @@ class Site(CloudObject):
     def tasks(self):
         tasks = {}
         uri = ('%s/tasks' % (self.uri))
-        response = make_acapi_request('GET', uri, auth=self.auth)
+        response = self.request(uri=uri)
         for task in response.content:
             id = int(task[u'id'])
-            tasks[id] = task
+            task_uri = ('%s/%d', (uri, id))
+            tasks[id] = Task(task_uri, self.auth, data=task)
 
         return tasks
 
 
+class Task(AcquiaResource):
+    
+    def pending(self):
+        # Ensure we don't have stale data
+        self.data = None
+        task = self.get()
+        state = task['state'].encode('ascii', 'ignore')
+        return state not in ['done', 'error']
 
-class Task(CloudObject):
-    pass
-
-class User(CloudObject):
+class User(AcquiaResource):
 
     def drushrc(self):
         uri =  ('%s/drushrc' % (self.uri))
