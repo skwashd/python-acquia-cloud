@@ -33,7 +33,7 @@ class Client(object):
         Create an Acquia Cloud API REST client.
         '''
         if not user or not token:
-            user, token = __find_credentials()
+            user, token = self.__find_credentials()
             if not user or not token:
                 raise AcquiaCloudException("Credentials not provided")
 
@@ -72,21 +72,13 @@ class Client(object):
         user = User(self.generate_uri('me'), self.auth)
         return user
 
-    def __find_credentials(environ=None):
+    def __find_credentials(self):
         """
-        Look in the current environment for API credentials
-
-        Lifted from Twilio's twilio-python lib
-
-        :param environ: the environment to check
+        Check environment variables for API credentials.
         """
-        environment = environ or os.environ
-        try:
-            user = environment["ACQUIA_CLOUD_API_USER"]
-            token = environment["ACQUIA_CLOUD_API_TOKEN"]
-            return user, token
-        except KeyError:
-            return None, None
+        user = os.environ.get('ACQUIA_CLOUD_API_USER')
+        token = os.environ.get('ACQUIA_CLOUD_API_TOKEN')
+        return user, token
 
 class AcquiaCloudException(Exception):
     pass
