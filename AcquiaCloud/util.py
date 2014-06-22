@@ -1,36 +1,119 @@
+"""
+Utility functions
+
+Functions lifted from twilio-python's util.py and base.py as noted.
+"""
+
 import datetime
+import os
+import platform
+
 from email.utils import parsedate
-from six import iteritems
+from six import integer_types, string_types, binary_type, iteritems
 
+from . import __version__
+from .compat import urlparse, urlencode
+from .connection import Connection
+from .imports import parse_qs, httplib2, json
+from .response import Response
 
-def transform_params(parameters):
+def make_request(method, url, params=None, data=None, headers=None,
+                 cookies=None, files=None, auth=None, timeout=None,
+                 allow_redirects=False, proxies=None):
+    """Sends an HTTP request
+
+    Hacked up version of twilio-python function of the same name.
+
+    :param str method: The HTTP method to use
+    :param str url: The URL to request
+    :param dict params: Query parameters to append to the URL
+    :param dict data: Parameters to go in the body of the HTTP request
+    :param dict headers: HTTP Headers to send with the request
+    :param float timeout: Socket/Read timeout for the request
+
+    :return: An http response
+    :rtype: A :class:`Response <models.Response>` object
+
+    See the requests documentation for explanation of all these parameters
+
+    Currently proxies, files, and cookies are all ignored
     """
-    Transform parameters, throwing away any None values
-    and convert False and True values to strings
+    http = httplib2.Http(
+        timeout=timeout,
+        proxy_info=Connection.proxy_info(),
+    )
+    http.follow_redirects = allow_redirects
 
-    Ex:
-    {"record": true, "date_created": "2012-01-02"}
+    if auth is not None:
+        http.add_credentials(auth[0], auth[1])
 
-    becomes:
-    {"Record": "true", "DateCreated": "2012-01-02"}
+    def encode_atom(atom):
+            if isinstance(atom, (integer_types, binary_type)):
+                return atom
+            elif isinstance(atom, string_types):
+                return atom.encode('utf-8')
+            else:
+                raise ValueError('list elements should be an integer, '
+                                 'binary, or string')
+
+    if data is not None:
+        data = json.dumps(data)
+
+    if params is not None:
+        enc_params = urlencode(params, doseq=True)
+        if urlparse(url).query:
+            url = '%s&%s' % (url, enc_params)
+        else:
+            url = '%s?%s' % (url, enc_params)
+
+    resp, content = http.request(url, method, headers=headers, body=data)
+
+    # Format httplib2 request as requests object
+    return Response(resp, content.decode('utf-8'), url)
+
+
+def make_acapi_request(method, uri, **kwargs):
     """
-    transformed_parameters = {}
+    Make a request to Acquia Cloud API. Throws an error
 
-    for key, value in iteritems(parameters):
-        if isinstance(value, (list, tuple, set)):
-            value = [convert_boolean(param) for param in value]
-            transformed_parameters[format_name(key)] = value
-        elif value is not None:
-            transformed_parameters[format_name(key)] = convert_boolean(value)
+    Modified version of make_twilio_request function in twilio-python.
 
-    return transformed_parameters
+    :return: a requests-like HTTP response
+    :rtype: :class:`RequestsResponse`
+    :raises AcquiaCloudRestException: if the response is a 400
+        or 500-level response.
+    """
+    headers = kwargs.get("headers", {})
 
+    user_agent = "Acquia Cloud API/%s (Python %s)" % (
+        __version__,
+        platform.python_version(),
+    )
+    headers["User-Agent"] = user_agent
+    headers["Accept-Charset"] = "utf-8"
+    headers["Accept"] = "application/json"
+    uri += ".json"
 
-def format_name(word):
-    if word.lower() == word:
-        return convert_case(word)
-    else:
-        return word
+    if method == "POST" and "Content-Type" not in headers:
+        headers["Content-Type"] = "application/x-www-form-urlencoded"
+
+    kwargs["headers"] = headers
+
+    resp = make_request(method, uri, **kwargs)
+
+    if not resp.ok:
+        try:
+            error = json.loads(resp.content)
+            code = error["code"]
+            message = "%s: %s" % (code, error["message"])
+        except:
+            code = None
+            message = resp.content
+
+        raise AcquiaCloudRestException(status=resp.status_code, method=method,
+                                  uri=resp.url, msg=message)
+
+    return resp
 
 
 def parse_date(d):
@@ -57,12 +140,6 @@ def parse_rfc2822_date(s):
     return datetime.datetime(*date_tuple[:6])
 
 
-def convert_boolean(boolean):
-    if isinstance(boolean, bool):
-        return 'true' if boolean else 'false'
-    return boolean
-
-
 def convert_case(s):
     """
     Given a string in snake case, convert to CamelCase
@@ -71,59 +148,6 @@ def convert_case(s):
     date_created -> DateCreated
     """
     return ''.join([a.title() for a in s.split("_") if a])
-
-
-def convert_keys(d):
-    """
-    Return a dictionary with all keys converted from arguments
-    """
-    special = {
-        "started_before": "StartTime<",
-        "started_after": "StartTime>",
-        "started": "StartTime",
-        "ended_before": "EndTime<",
-        "ended_after": "EndTime>",
-        "ended": "EndTime",
-        "from_": "From",
-    }
-
-    result = {}
-
-    for k, v in iteritems(d):
-        if k in special:
-            result[special[k]] = v
-        else:
-            result[convert_case(k)] = v
-
-    return result
-
-
-def normalize_dates(myfunc):
-    def inner_func(*args, **kwargs):
-        for k, v in iteritems(kwargs):
-            res = [True for s in ["after", "before", "on"] if s in k]
-            if len(res):
-                kwargs[k] = parse_date(v)
-        return myfunc(*args, **kwargs)
-    inner_func.__doc__ = myfunc.__doc__
-    inner_func.__repr__ = myfunc.__repr__
-    return inner_func
-
-
-def change_dict_key(d, from_key, to_key):
-    """
-    Changes a dictionary's key from from_key to to_key.
-    No-op if the key does not exist.
-
-    :param d: Dictionary with key to change
-    :param from_key: Old key
-    :param to_key: New key
-    :return: None
-    """
-    try:
-        d[to_key] = d.pop(from_key)
-    except KeyError:
-        pass
 
 
 class _UnsetTimeoutKls(object):
