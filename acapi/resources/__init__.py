@@ -257,6 +257,29 @@ class Environment(AcquiaResource):
 
         return domains
 
+    def server(self, name):
+        uri = ('%s/servers/%s', (self.uri, name))
+        return Server(uri, self.auth)
+
+    def servers(self):
+        uri = ('%s/servers' % (self.uri))
+
+        servers = ServerList(uri, self.auth)
+
+        response = self.request(uri=uri)
+        for server in response.content:
+            name = server['name'].encode('ascii', 'ignore')
+            server_uri = ('%s/%s' % (uri, name))
+            servers[name] = Server(server_uri, self.auth, data=server)
+
+        return servers
+
+class Server(AcquiaResource):
+    pass
+
+class ServerList(AcquiaList):
+    pass
+
 
 class Site(AcquiaResource):
 
