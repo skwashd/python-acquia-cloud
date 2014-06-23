@@ -15,6 +15,7 @@ from . import __version__
 from .compat import urlparse, urlencode
 from .connection import Connection
 from .imports import parse_qs, httplib2, json
+from .exceptions import AcquiaCloudException, AcquiaCloudRestException
 from .response import Response
 
 def make_request(method, url, params=None, data=None, headers=None,
