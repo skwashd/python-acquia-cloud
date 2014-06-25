@@ -149,10 +149,15 @@ class Database(AcquiaResource):
         current_env = m.group(1)
         db = m.group(2)
 
-        move_uri = ('%s/%s' % (p.sub('/dbs/\g<2>/db-copy/\g<1>', self.uri), target))
+        copy_uri = ('%s/%s' % (p.sub('/dbs/\g<2>/db-copy/\g<1>', self.uri), target))
 
-        response = self.request(uri=move_uri, method='POST')
-        if response.ok:
+        response = self.request(uri=copy_uri, method='POST')
+        task_data = response.content
+
+        task = self.wait_for_task(task_data)
+        if None == task['completed']:
+            raise Exception('Unable to request backup')
+
             # Another hack, this time to get the URI for the domain.
             new_uri = self.uri.replace(('/%s/' % (current_env)), ('/%s/' % (target)))
             return Database(new_uri, self.auth)
@@ -180,7 +185,6 @@ class Domain(AcquiaResource):
         domain = m.group(2)
 
         move_uri = ('%s/%s' % (p.sub('/domain-move/\g<1>', self.uri), target))
-
         data = {'domains': [domain]}
 
         response = self.request(uri=move_uri, method='POST', data=data)
@@ -211,6 +215,23 @@ class DomainList(AcquiaList):
 
 
 class Environment(AcquiaResource):
+
+    def copy_files(self, target):
+        p = re.compile('/envs/(.*)')
+        m = p.search(self.uri)
+        source = m.group(1)
+
+        uri = '{uri}/{target}'.format(uri=p.sub('/files-copy/\g<1>', self.uri), target=target)
+        response = self.request(method='POST', uri=uri)
+        task_data = response.content
+
+        task = self.wait_for_task(task_data, uri)
+        if None == task['completed']:
+            raise Exception('Failed to copy files')
+
+        return True
+
+
     
     def db(self, name):
         uri = ('%s/dbs/%s' % (self.uri, name))
