@@ -40,8 +40,8 @@ class AcquiaData(object):
         """
         task_id = int(task_data['id'])
 
-        p = re.compile('/sites/(.*)/envs.*')
-        task_uri = ('%s/%d' % (p.sub('/sites/\g<1>/tasks', self.uri), task_id))
+        p = re.compile('/sites/([a-z\:0-9]+)(/.*)?')
+        task_uri = p.sub('/sites/\g<1>/tasks/{}'.format(task_id), self.uri)
 
         return task_uri
 
@@ -303,6 +303,20 @@ class ServerList(AcquiaList):
 
 
 class Site(AcquiaResource):
+
+    def copy_code(self, source, target):
+        uri = '{base}/code-deploy/{source}/{target}'.format(base=self.uri,
+                source=source, target=target)
+
+        response = self.request(uri=uri, method='POST')
+        task_data = response.content
+
+        task = self.wait_for_task(task_data)
+        if None == task['completed']:
+            raise Exception('Unable to deploy changes.')
+
+        return True
+
 
     def environment(self, name):
         uri = ('%s/envs/%s' % (self.uri, name))
