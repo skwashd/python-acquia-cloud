@@ -1,7 +1,7 @@
-"""
-Utility functions
+"""Utility functions.
 
 Functions lifted from twilio-python's util.py and base.py as noted.
+
 """
 
 import datetime
@@ -11,33 +11,42 @@ import platform
 from email.utils import parsedate
 from six import integer_types, string_types, binary_type, iteritems
 
-from . import __version__
+from .version import __version__
 from .compat import urlparse, urlencode
 from .connection import Connection
 from .imports import parse_qs, httplib2, json
 from .exceptions import AcquiaCloudException, AcquiaCloudRestException
 from .response import Response
 
+
 def make_request(method, url, params=None, data=None, headers=None,
                  cookies=None, files=None, auth=None, timeout=None,
                  allow_redirects=False, proxies=None):
-    """Sends an HTTP request
+    """Send a HTTP request.
 
     Hacked up version of twilio-python function of the same name.
 
-    :param str method: The HTTP method to use
-    :param str url: The URL to request
-    :param dict params: Query parameters to append to the URL
-    :param dict data: Parameters to go in the body of the HTTP request
-    :param dict headers: HTTP Headers to send with the request
-    :param float timeout: Socket/Read timeout for the request
+    Currently proxies, files, and cookies are all ignored.
 
-    :return: An http response
-    :rtype: A :class:`Response <models.Response>` object
+    Parameters
+    ----------
+    method : str
+        The HTTP method to use.
+    url : str
+        The URL to request.
+    params : dict
+        Query parameters to append to the URL.
+    data : dict
+        Parameters to go in the body of the HTTP request.
+    headers : dict
+        HTTP Headers to send with the request.
+    timeout : float
+        Socket/Read timeout for the request.
 
-    See the requests documentation for explanation of all these parameters
-
-    Currently proxies, files, and cookies are all ignored
+    Returns
+    -------
+    Response
+        A HTTP response object.
     """
     http = httplib2.Http(
         timeout=timeout,
@@ -47,15 +56,6 @@ def make_request(method, url, params=None, data=None, headers=None,
 
     if auth is not None:
         http.add_credentials(auth[0], auth[1])
-
-    def encode_atom(atom):
-            if isinstance(atom, (integer_types, binary_type)):
-                return atom
-            elif isinstance(atom, string_types):
-                return atom.encode('utf-8')
-            else:
-                raise ValueError('list elements should be an integer, '
-                                 'binary, or string')
 
     if data is not None:
         data = json.dumps(data)
@@ -73,9 +73,8 @@ def make_request(method, url, params=None, data=None, headers=None,
     return Response(resp, content.decode('utf-8'), url)
 
 
-def make_acapi_request(method, uri, **kwargs):
-    """
-    Make a request to Acquia Cloud API. Throws an error
+def acapi_request(method, uri, **kwargs):
+    """Make a request to Acquia Cloud API. Throws an error.
 
     Modified version of make_twilio_request function in twilio-python.
 
@@ -83,6 +82,7 @@ def make_acapi_request(method, uri, **kwargs):
     :rtype: :class:`RequestsResponse`
     :raises AcquiaCloudRestException: if the response is a 400
         or 500-level response.
+
     """
     headers = kwargs.get("headers", {})
 
@@ -91,6 +91,7 @@ def make_acapi_request(method, uri, **kwargs):
         platform.python_version(),
     )
     headers["User-Agent"] = user_agent
+    # Acquia Cloud API only supports UTF-8 json.
     headers["Accept-Charset"] = "utf-8"
     headers["Accept"] = "application/json"
     uri += ".json"
@@ -112,47 +113,19 @@ def make_acapi_request(method, uri, **kwargs):
             message = resp.content
 
         raise AcquiaCloudRestException(status=resp.status_code, method=method,
-                                  uri=resp.url, msg=message)
+                                       uri=resp.url, msg=message)
 
     return resp
 
 
-def parse_date(d):
-    """
-    Return a string representation of a date that the Twilio API understands
-    Format is YYYY-MM-DD. Returns None if d is not a string, datetime, or date
-    """
-    if isinstance(d, datetime.datetime):
-        return str(d.date())
-    elif isinstance(d, datetime.date):
-        return str(d)
-    elif isinstance(d, str):
-        return d
-
-
-def parse_rfc2822_date(s):
-    """
-    Parses an RFC 2822 date string and returns a time zone naive datetime
-    object. All dates returned from Twilio are UTC.
-    """
-    date_tuple = parsedate(s)
-    if date_tuple is None:
-        return None
-    return datetime.datetime(*date_tuple[:6])
-
-
-def convert_case(s):
-    """
-    Given a string in snake case, convert to CamelCase
-
-    Ex:
-    date_created -> DateCreated
-    """
-    return ''.join([a.title() for a in s.split("_") if a])
-
-
 class _UnsetTimeoutKls(object):
-    """ A sentinel for an unset timeout. Defaults to the system timeout. """
+
+    """A sentinel for an unset timeout.
+
+    Defaults to the system timeout.
+
+    """
+
     def __repr__(self):
         return '<Unset Timeout Value>'
 

@@ -1,3 +1,5 @@
+""" Handle imports for Python 2.x and 3.x. """
+
 # parse_qs
 try:
     from urlparse import parse_qs

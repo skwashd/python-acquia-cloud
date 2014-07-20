@@ -1,3 +1,4 @@
+""" Multiple version libraries. """
 
 # Those are not supported by the six library and needs to be done manually
 from six import binary_type
