@@ -150,7 +150,7 @@ class Environment(AcquiaResource):
         """
         servers = ServerList(self.uri, self.auth)
 
-        response = self.request(uri=uri)
+        response = self.request(uri=servers.uri)
         for server in response.content:
             name = server['name'].encode('ascii', 'ignore')
             server_uri = servers.get_resource_uri(name)
