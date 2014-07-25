@@ -1,5 +1,6 @@
 """ Acquia Cloud API Environment resource. """
 
+import re
 from .acquiaresource import AcquiaResource
 from .database import Database
 from .databaselist import DatabaseList
@@ -36,7 +37,7 @@ class Environment(AcquiaResource):
         response = self.request(method='POST', uri=uri)
         task_data = response.content
 
-        task = Task(self.uri, self.auth, data=data).wait()
+        task = Task(self.uri, self.auth, data=task_data).wait()
         if None == task['completed']:
             raise Exception('Failed to copy files')
 
