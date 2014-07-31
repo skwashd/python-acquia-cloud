@@ -2,6 +2,7 @@
 
 import re
 from .acquiaresource import AcquiaResource
+from .task import Task
 
 
 class Domain(AcquiaResource):
@@ -55,12 +56,14 @@ class Domain(AcquiaResource):
         data = {'domains': [domain]}
 
         response = self.request(uri=move_uri, method='POST', data=data)
-        if response.ok:
-            # Another hack, this time to get the URI for the domain.
-            env_search = '/{}/'.format(current_env)
-            env_target = '/{}/'.format(target)
-            new_uri = self.uri.replace(env_search, env_target)
-            return Domain(new_uri, self.auth)
+        task_data = response.content
 
-        # FIXME Throw an exception here
-        return None
+        task = Task(self.uri, self.auth, data=task_data).wait()
+        if None == task['completed']:
+            raise Exception('Unable to move domian.')
+
+        # Another hack, this time to get the URI for the domain.
+        env_search = '/{}/'.format(current_env)
+        env_target = '/{}/'.format(target)
+        new_uri = self.uri.replace(env_search, env_target)
+        return Domain(new_uri, self.auth)
