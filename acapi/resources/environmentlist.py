@@ -15,5 +15,5 @@ class EnvironmentList(AcquiaList):
         base_uri : str
             The base URI to use for generating the new URI.
         """
-        uri = '{}/servers'.format(base_uri)
+        uri = '{}/envs'.format(base_uri)
         self.uri = uri
