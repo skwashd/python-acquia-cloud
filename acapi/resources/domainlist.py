@@ -18,7 +18,6 @@ class DomainList(AcquiaList):
 
         """
         uri = self.get_resource_uri(name)
-        print uri
         response = self.request(method='POST', uri=uri)
         task_data = response.content
 
