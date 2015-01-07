@@ -132,6 +132,41 @@ class Environment(AcquiaResource):
 
         return domains
 
+    def livedev(self, enable, discard=True):
+        """Enable or disable live dev for the domain.
+
+        Parameters
+        ----------
+        enable : bool
+             Enable live development for this environment?
+        discard : bool
+             Discard all non committed changes?
+
+        Returns
+        -------
+        Environment
+            This environment object.
+        """
+        action = 'enable'
+        params = {}
+
+        if not enable:
+            action = 'disable'
+        uri = '{uri}/livedev/{action}'.format(uri=self.uri, action=action)
+
+        if discard:
+            params['discard'] = 1
+
+        response = self.request(uri=uri, method='POST', params=params)
+        task_data = response.content
+
+        task = Task(self.uri, self.auth, data=task_data).wait()
+        if None == task['completed']:
+            raise Exception('Failed to {action} live development.'.format(action=action))
+
+        return self
+
+
     def server(self, hostname):
         """Fetch a server associated with the environment.
 
