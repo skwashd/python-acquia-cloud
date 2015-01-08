@@ -87,4 +87,4 @@ class Task(AcquiaResource):
         if 'done' != task['state']:
             raise AcquiaCloudTaskFailedException('Task {task_id} failed'.format(task_id=task['id']), task)
 
-        return self.get()
+        return task
