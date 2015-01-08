@@ -41,3 +41,12 @@ class AcquiaCloudRestException(AcquiaCloudException):
         """ Convert exception to string. """
         subs = (self.method, self.uri, self.status, self.msg)
         return ('%s %s resulted in HTTP %s error: "%s"' % subs)
+
+class AcquiaCloudTaskFailedException(Exception):
+    """An Acquia task failure exception.
+    """
+
+    def __init__(self, message, task):
+        super(AcquiaCloudTaskFailedException, self).__init__(message)
+        self.message = message
+        self.task = task

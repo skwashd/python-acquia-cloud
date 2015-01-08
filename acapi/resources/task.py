@@ -2,8 +2,9 @@
 
 import re
 import time
-from .acquiaresource import AcquiaResource
 
+from .acquiaresource import AcquiaResource
+from ..exceptions import AcquiaCloudTaskFailedException
 
 class Task(AcquiaResource):
 
@@ -81,5 +82,9 @@ class Task(AcquiaResource):
             # This seems like a reasonable trade off between being polite and
             # hammering the API.
             time.sleep(self.POLL_INTERVAL)
+
+        task = self.get()
+        if 'done' != task['state']:
+            raise AcquiaCloudTaskFailedException('Task {task_id} failed'.format(task_id=task['id']), task)
 
         return self.get()
