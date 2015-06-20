@@ -5,6 +5,7 @@ Functions lifted from twilio-python's util.py and base.py as noted.
 """
 
 import datetime
+import logging
 import os
 import platform
 
@@ -68,6 +69,7 @@ def make_request(method, url, params=None, data=None, headers=None,
             url = '%s?%s' % (url, enc_params)
 
     resp, content = http.request(url, method, headers=headers, body=data)
+    logging.info('Requested %s %s Response: %s (%s)', method, url, resp.reason, resp.status)
 
     # Format httplib2 request as requests object
     return Response(resp, content.decode('utf-8'), url)
