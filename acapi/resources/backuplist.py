@@ -1,31 +1,43 @@
 """ List of database backups. """
 
 import json
+
 from .acquialist import AcquiaList
 from .backup import Backup
-from .task import Task
-
 
 class BackupList(AcquiaList):
 
     """List of database backups for a site."""
 
+    def __init__(self, base_uri, auth, *args, **kwargs):
+        """ Constructor. """
+        super(BackupList, self).__init__(base_uri, auth, *args, **kwargs)
+        self.fetch()
+
     def create(self):
-        """Create a new backup."""
-        response = self.request(method='POST')
-        task_data = response.content
+        """ Create a new backup."""
+        task_data = self.request(method='POST')
 
-        task = Task(self.uri, self.auth, data=task_data).wait()
-        if None == task['completed']:
-            raise Exception('Unable to request backup')
+        task = self.create_task(self.uri, task_data)
+        task.wait()
 
-        id = int(json.loads(task['result'])['backupid'])
-        uri = '{uri}/{id}'.format(uri=self.uri, id=id)
+        # For some reason Acquia encodes JSON as a string in a JSON object.
+        result = json.loads(task['result'])
+        backup_id = result['backupid']
+        uri = '{uri}/{backup_id}'.format(uri=self.uri, backup_id=backup_id)
         backup = Backup(uri, self.auth)
 
-        self.__setitem__(id, backup)
+        self.__setitem__(backup_id, backup)
 
         return backup
+
+    def fetch(self):
+        """ Fetch and store database object. """
+        backups = super(BackupList, self).request(uri=self.uri)
+        for backup in backups:
+            backup_id = backup['id'].encode('ascii', 'ignore')
+            uri = self.get_resource_uri(backup_id)
+            self.__setitem__(backup_id, Backup(uri, self.auth, data=backup))
 
     def set_base_uri(self, base_uri):
         """ Set the base URI for backup resources.

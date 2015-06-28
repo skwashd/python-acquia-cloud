@@ -1,11 +1,24 @@
 """ Acquia Cloud API server list resource. """
 
 from .acquialist import AcquiaList
-
+from .environment import Environment
 
 class EnvironmentList(AcquiaList):
 
-    """Dict of Acquia Cloud API Server resources keyed by hostname."""
+    """Dict of Acquia Cloud API Environment resources keyed by short name."""
+
+    def __init__(self, base_uri, auth, *args, **kwargs):
+        """ Constructor. """
+        super(EnvironmentList, self).__init__(base_uri, auth, *args, **kwargs)
+        self.fetch()
+
+    def fetch(self):
+        """ Fetch and store environment objects. """
+        envs = super(EnvironmentList, self).request(uri=self.uri)
+        for env in envs:
+            name = env['name'].encode('ascii', 'ignore')
+            env_uri = self.get_resource_uri(name)
+            self.__setitem__(name, Environment(env_uri, self.auth, data=env))
 
     def get_resource_uri(self, name):
         """ Generate the resource URI.

@@ -3,15 +3,18 @@
 import re
 from .acquialist import AcquiaList
 from .database import Database
-from .task import Task
-
 
 class DatabaseList(AcquiaList):
 
     """Dictionary of Acquia Cloud API database resources keyed by name."""
 
+    def __init__(self, base_uri, auth, *args, **kwargs):
+        """ Constructor. """
+        super(DatabaseList, self).__init__(base_uri, auth, *args, **kwargs)
+        self.fetch()
+
     def create(self, name):
-        """ Creates a new database.
+        """ Create a new database.
 
         Parameters
         ----------
@@ -25,19 +28,25 @@ class DatabaseList(AcquiaList):
         """
         base_uri = re.sub(r'/envs/(.+)/dbs', '', self.uri)
         uri = '{base_uri}/dbs'.format(base_uri=base_uri)
-        response = self.request(method='POST', uri=uri, data={'db': name})
-        task_data = response.content
 
-        task = Task(self.uri, self.auth, data=task_data).wait()
-        if None == task['completed']:
-            raise Exception('Failed to create domain')
+        task_data = self.request(method='POST', uri=uri, data={'db': name})
+        task = self.create_task(uri, task_data)
+        task.wait()
 
         db_uri = '{uri}/{name}'.format(uri=self.uri, name=name)
-        db = Database(db_uri, self.auth)
+        db_obj = Database(db_uri, self.auth)
 
-        self.__setitem__(name, db)
+        self.__setitem__(name, db_obj)
 
-        return db
+        return db_obj
+
+    def fetch(self):
+        """ Fetch and store database objects. """
+        dbs = super(DatabaseList, self).request(uri=self.uri)
+        for db_obj in dbs:
+            name = db_obj['name'].encode('ascii', 'ignore')
+            db_uri = self.get_resource_uri(name)
+            self.__setitem__(name, Database(db_uri, self.auth, data=db_obj))
 
     def get_resource_uri(self, name):
         """ Generate the database URI.

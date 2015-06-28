@@ -2,33 +2,8 @@
 
 import os
 
-from .imports import httplib2, json
-from .connection import Connection
-
-from six import u
-
-# Backwards compatibility.
-from .version import __version__, __version_info__
-
-from .util import acapi_request
-
 from .resources import Site, SiteList, User
-from .exceptions import AcquiaCloudException, AcquiaCloudRestException
-
-
-def set_proxy_server(proxy_url, proxy_port):
-    """Set the global proxy for all requests.
-
-    Parameters
-    ----------
-    proxy_url : string
-        The URL of the proxy server.
-    proxy_port : int
-        The TCP port of the proxy server.
-
-    """
-    Connection.set_proxy_info(proxy_url, proxy_port)
-
+from .exceptions import AcquiaCloudException
 
 class Client(object):
 
@@ -106,14 +81,6 @@ class Client(object):
 
         """
         sites = SiteList(self.endpoint, self.auth)
-
-        uri = self.generate_uri('sites')
-        response = acapi_request('GET', uri, auth=self.auth)
-        for site in response.content:
-            realm, name = site.encode('ascii', 'ignore').split(':')
-            site_uri = sites.get_resource_uri(name, realm=realm)
-            sites[name] = Site(site_uri, self.auth)
-
         return sites
 
     def user(self):

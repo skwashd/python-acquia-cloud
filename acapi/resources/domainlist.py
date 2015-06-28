@@ -2,12 +2,15 @@
 
 from .acquialist import AcquiaList
 from .domain import Domain
-from .task import Task
-
 
 class DomainList(AcquiaList):
 
     """ Dictionary of Acquia Cloud API domain resources. """
+
+    def __init__(self, base_uri, auth, *args, **kwargs):
+        """ Constructor. """
+        super(DomainList, self).__init__(base_uri, auth, *args, **kwargs)
+        self.fetch()
 
     def create(self, name):
         """Create a new domain object.
@@ -18,18 +21,23 @@ class DomainList(AcquiaList):
 
         """
         uri = self.get_resource_uri(name)
-        response = self.request(method='POST', uri=uri)
-        task_data = response.content
-
-        task = Task(self.uri, self.auth, data=task_data).wait()
-        if None == task['completed']:
-            raise Exception('Failed to create domain')
+        task_data = self.request(uri=uri, method='POST')
+        task = self.create_task(uri, task_data)
+        task.wait()
 
         domain = Domain(uri, self.auth)
 
         self.__setitem__(name, domain)
 
         return domain
+
+    def fetch(self):
+        """ Fetch and store domain objects. """
+        domains = super(DomainList, self).request(uri=self.uri)
+        for domain in domains:
+            name = domain['name'].encode('ascii', 'ignore')
+            domain_uri = self.get_resource_uri(name)
+            self.__setitem__(name, Domain(domain_uri, self.auth, data=domain))
 
     def get_resource_uri(self, fqdn):
         """ Generate the domain resource URI.

@@ -1,11 +1,24 @@
 """ Acquia Cloud API server list resource. """
 
 from .acquialist import AcquiaList
-
+from .server import Server
 
 class ServerList(AcquiaList):
 
     """Dict of Acquia Cloud API Server resources keyed by hostname."""
+
+    def __init__(self, base_uri, auth, *args, **kwargs):
+        """ Constructor. """
+        super(ServerList, self).__init__(base_uri, auth, *args, **kwargs)
+        self.fetch()
+
+    def fetch(self):
+        """ Fetch and store server objects. """
+        servers = super(ServerList, self).request(uri=self.uri)
+        for server in servers:
+            name = server['name'].encode('ascii', 'ignore')
+            server_uri = self.get_resource_uri(name)
+            self.__setitem__(name, Server(server_uri, self.auth, data=server))
 
     def get_resource_uri(self, name):
         """ Generate the server URI.

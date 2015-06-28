@@ -1,17 +1,26 @@
 """ Acquia API task queue resource. """
 
+from datetime import datetime
+import logging
 import re
 import time
 
 from .acquiaresource import AcquiaResource
 from ..exceptions import AcquiaCloudTaskFailedException
 
+LOGGER = logging.getLogger('acapi.resources.task')
+
 class Task(AcquiaResource):
 
     """ Task queue resource. """
 
-    """ Task polling interval """
+    #: Task polling interval in seconds.
     POLL_INTERVAL = 3
+
+    #: Valid task properties
+    valid_keys = ['body', 'completed', 'cookie', 'created', 'description', 'hidden',
+                  'id', 'percentage', 'queue', 'received', 'recipient', 'result',
+                  'sender', 'started', 'state']
 
     def __init__(self, uri, auth, data=None, hack_uri=True):
         """ Constructor.
@@ -30,15 +39,15 @@ class Task(AcquiaResource):
         if hack_uri:
             uri = self.mangle_uri(uri, data)
 
+        self.loops = 0
+
         AcquiaResource.__init__(self, uri, auth, data)
 
     def mangle_uri(self, uri, task_data):
         """Generate a URI for a task based on JSON task object.
 
-        FIXME This belongs on Task, not AcquiaData.
-
-        Paramters
-        ---------
+        Parameters
+        ----------
         task_data : dict
             Raw task data from ACAPI.
 
@@ -49,8 +58,8 @@ class Task(AcquiaResource):
         """
         task_id = int(task_data['id'])
 
-        p = re.compile('/sites/([a-z\:0-9]+)(/.*)?')
-        task_uri = p.sub('/sites/\g<1>/tasks/{}'.format(task_id), uri)
+        pattern = re.compile(r'/sites/([a-z\:0-9]+)(/.*)?')
+        task_uri = pattern.sub(r'/sites/\g<1>/tasks/{}'.format(task_id), uri)
 
         return task_uri
 
@@ -63,10 +72,9 @@ class Task(AcquiaResource):
             Is the task still pending completion?
         """
         # Ensure we don't have stale data
-        self.data = None
-
-        task = self.get()
+        task = self.request()
         state = task['state'].encode('ascii', 'ignore')
+        self.data = task
         return state not in ['done', 'error']
 
     def wait(self):
@@ -77,14 +85,25 @@ class Task(AcquiaResource):
         Task
             Task object.
         """
+        # We wait a maximum of 30mins
+        max_loops = (60 * 30 / self.POLL_INTERVAL)
+        start = datetime.now()
+
         while self.pending():
-            # TODO Make this an property so users can override it.
-            # This seems like a reasonable trade off between being polite and
-            # hammering the API.
+            if self.loops >= max_loops:
+                break
+
+            self.loops += 1
             time.sleep(self.POLL_INTERVAL)
 
+        # Grab the cached response
         task = self.get()
-        if 'done' != task['state']:
-            raise AcquiaCloudTaskFailedException('Task {task_id} failed'.format(task_id=task['id']), task)
+        if 'done' != task['state'] or None == task['completed']:
+            raise AcquiaCloudTaskFailedException('Task {task_id} failed'
+                                                 .format(task_id=task['id']), task)
 
-        return task
+        end = datetime.now()
+        delta = end - start
+        LOGGER.info("Waited %.2f seconds for task to complete", delta.total_seconds())
+
+        return self

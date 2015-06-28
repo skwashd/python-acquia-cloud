@@ -4,19 +4,20 @@ import re
 from .acquiaresource import AcquiaResource
 from .backup import Backup
 from .backuplist import BackupList
-from .task import Task
-
 
 class Database(AcquiaResource):
 
     """Environment database."""
 
-    def backup(self, id):
+    #: Valid keys for environment object.
+    valid_keys = ['db_cluster', 'host', 'instance_name', 'name', 'password', 'username']
+
+    def backup(self, backup_id):
         """Fetch a backup.
 
         Parameters
         ----------
-        id : int
+        backup_id : int
             The id of the database backup to fetch.
 
         Returns
@@ -24,19 +25,12 @@ class Database(AcquiaResource):
         Backup
             The backup object.
         """
-        uri = '{uri}/backups/{id}'.format(uri=self.uri, id=id)
+        uri = '{uri}/backups/{backup_id}'.format(uri=self.uri, backup_id=backup_id)
         return Backup(uri, self.auth)
 
     def backups(self):
         """Fetch a list of database backups."""
         backups = BackupList(self.uri, self.auth)
-
-        response = self.request(uri=backups.uri)
-        for backup in response.content:
-            id = int(backup['id'])
-            backup_uri = backups.get_resource_uri(id=id)
-            backups[id] = Backup(backup_uri, self.auth, data=backup)
-
         return backups
 
     def copy(self, target):
@@ -53,20 +47,16 @@ class Database(AcquiaResource):
             Target database object.
         """
         # More regex hacks to work around the limitations of the ACAPI.
-        p = re.compile('/envs/(.*)/dbs/(.*)')
-        m = p.search(self.uri)
-        current_env = m.group(1)
-        db = m.group(2)
-        base_uri = p.sub('/dbs/\g<2>/db-copy/\g<1>', self.uri)
+        pattern = re.compile('/envs/(.*)/dbs/(.*)')
+        matches = pattern.search(self.uri)
+        current_env = matches.group(1)
+        base_uri = pattern.sub(r'/dbs/\g<2>/db-copy/\g<1>', self.uri)
 
         copy_uri = '{uri}/{target}'.format(uri=base_uri, target=target)
 
-        response = self.request(uri=copy_uri, method='POST')
-        task_data = response.content
-
-        task = Task(self.uri, self.auth, data=task_data).wait()
-        if None == task['completed']:
-            raise Exception('Unable to request backup')
+        task_data = self.request(uri=copy_uri, method='POST')
+        task = self.create_task(copy_uri, task_data)
+        task.wait()
 
         # Another hack, this time to get the URI for the domain.
         env_search = '/{}/'.format(current_env)

@@ -1,12 +1,13 @@
 """ Acquia Cloud API user resource. """
 
 from .acquiaresource import AcquiaResource
-from ..util import acapi_request
-
 
 class User(AcquiaResource):
 
     """ Acquia Cloud API user resource. """
+
+    #: Valid keys for a user.
+    valid_keys = ['authenticated_as']
 
     def drushrc(self):
         """ Fetch all the drush aliases for sites the user has access to.
@@ -19,5 +20,5 @@ class User(AcquiaResource):
             Collection of PHP code snippets.
         """
         uri = '{}/drushrc'.format(self.uri)
-        response = acapi_request('GET', uri, auth=self.auth)
-        return response.content
+        response = self.request(uri=uri)
+        return response

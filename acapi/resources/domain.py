@@ -2,12 +2,12 @@
 
 import re
 from .acquiaresource import AcquiaResource
-from .task import Task
-
 
 class Domain(AcquiaResource):
 
     """ Domain record associated with an environment. """
+
+    valid_keys = ['name']
 
     def cache_purge(self):
         """Purge the varnish cache for the domain.
@@ -18,8 +18,11 @@ class Domain(AcquiaResource):
             Was the cache cleared?
         """
         uri = '{}/cache'.format(self.uri)
-        response = self.request(uri=uri, method='DELETE')
-        return response.ok
+        data = self.request(uri=uri, method='DELETE')
+        task = self.create_task(uri, data)
+        task.wait()
+
+        return True
 
     def delete(self):
         """Delete the domain record.
@@ -29,8 +32,10 @@ class Domain(AcquiaResource):
         bool
             Was the domain record deleted?
         """
-        response = self.request(method='DELETE')
-        return response.ok
+        data = self.request(method='DELETE')
+        task = self.create_task(self.uri, data)
+        task.wait()
+        return True
 
     def move(self, target):
         """Move a domain from one environment to another.
@@ -47,20 +52,17 @@ class Domain(AcquiaResource):
         """
         # These regex hacks are needed because Acquia doesn't keep this
         # function with domains, which sucks.
-        p = re.compile('/envs/(.*)/domains/(.*)')
-        m = p.search(self.uri)
-        current_env = m.group(1)
-        domain = m.group(2)
+        pattern = re.compile('/envs/(.*)/domains/(.*)')
+        matches = pattern.search(self.uri)
+        current_env = matches.group(1)
+        domain = matches.group(2)
 
-        move_uri = ('%s/%s' % (p.sub('/domain-move/\g<1>', self.uri), target))
+        move_uri = ('%s/%s' % (pattern.sub(r'/domain-move/\g<1>', self.uri), target))
         data = {'domains': [domain]}
 
-        response = self.request(uri=move_uri, method='POST', data=data)
-        task_data = response.content
-
-        task = Task(self.uri, self.auth, data=task_data).wait()
-        if None == task['completed']:
-            raise Exception('Unable to move domian.')
+        task_data = self.request(uri=move_uri, method='POST', data=data)
+        task = self.create_task(move_uri, task_data)
+        task.wait()
 
         # Another hack, this time to get the URI for the domain.
         env_search = '/{}/'.format(current_env)

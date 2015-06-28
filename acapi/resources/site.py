@@ -3,13 +3,15 @@
 from .acquiaresource import AcquiaResource
 from .environment import Environment
 from .environmentlist import EnvironmentList
-from .task import Task
 from .tasklist import TaskList
-
+from .task import Task
 
 class Site(AcquiaResource):
 
     """Site (or subscription) resource."""
+
+    #: Valid keys for site object.
+    valid_keys = ['title', 'name', 'production_mode', 'unix_username', 'vcs_type', 'vcs_url']
 
     def copy_code(self, source, target):
         """ Copy code from one environment to another.
@@ -30,12 +32,9 @@ class Site(AcquiaResource):
             base=self.uri,
             source=source, target=target)
 
-        response = self.request(uri=uri, method='POST')
-        task_data = response.content
-
-        task = Task(self.uri, self.auth, data=task_data).wait()
-        if None == task['completed']:
-            raise Exception('Unable to deploy changes.')
+        task_data = self.request(uri=uri, method='POST')
+        task = self.create_task(uri, task_data)
+        task.wait()
 
         return True
 
@@ -64,20 +63,14 @@ class Site(AcquiaResource):
             Dictionary of environments keyed by name.
         """
         envs = EnvironmentList(self.uri, self.auth)
-        response = self.request(uri=envs.uri)
-        for env in response.content:
-            name = env['name'].encode('ascii', 'ignore')
-            env_uri = envs.get_resource_uri(name)
-            envs[name] = Environment(env_uri, self.auth, data=env)
-
         return envs
 
-    def task(self, id):
+    def task(self, task_id):
         """ Retrieve a task.
 
         Parameters
         ----------
-        id : int
+        task_id : int
             The task identifier.
 
         Returns
@@ -85,7 +78,7 @@ class Site(AcquiaResource):
         Task
             The task resource object.
         """
-        uri = ('%s/tasks/%d' % (self.uri, id))
+        uri = ('%s/tasks/%d' % (self.uri, task_id))
         return Task(uri, self.auth, hack_uri=False)
 
     def tasks(self):
@@ -97,10 +90,4 @@ class Site(AcquiaResource):
             Dictionary of task resources keyed by id.
         """
         tasks = TaskList(self.uri, self.auth)
-        response = self.request(tasks.uri)
-        for task in response.content:
-            id = int(task['id'])
-            task_uri = tasks.get_resource_uri(id)
-            tasks[id] = Task(task_uri, self.auth, data=task, hack_uri=False)
-
         return tasks

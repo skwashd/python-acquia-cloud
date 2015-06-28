@@ -1,5 +1,6 @@
 """ Acquia Cloud API Exceptions. """
 
+from pprint import pformat
 
 class AcquiaCloudException(Exception):
 
@@ -10,43 +11,36 @@ class AcquiaCloudException(Exception):
 
     pass
 
+class AcquiaCloudNoDataException(AcquiaCloudException):
 
-class AcquiaCloudRestException(AcquiaCloudException):
+    """ No data found exception. """
 
-    """A generic 400 or 500 level exception from the Acquia Cloud API.
+    pass
 
-    This class was lifted from twilio-python and hacked.
-    """
+class AcquiaCloudTaskFailedException(AcquiaCloudException):
 
-    def __init__(self, status, uri, msg="", method='GET'):
-        """ Constructor.
-
-        Params
-        ------
-        status : int
-            The HTTP status that was returned for the exception.
-        uri : str
-            The URI that caused the exception.
-        msg : str
-            A human-readable message for the error.
-        method : str
-            The HTTP method used to make the request
-        """
-        self.uri = uri
-        self.status = status
-        self.msg = msg
-        self.method = method
-
-    def __str__(self):
-        """ Convert exception to string. """
-        subs = (self.method, self.uri, self.status, self.msg)
-        return ('%s %s resulted in HTTP %s error: "%s"' % subs)
-
-class AcquiaCloudTaskFailedException(Exception):
-    """An Acquia task failure exception.
-    """
+    """An Acquia task failure exception."""
 
     def __init__(self, message, task):
+        """ Constructor.
+
+        Parameters
+        ----------
+        message: str
+            The error message.
+        task: Task
+            The Task object for the task that failed.
+        """
         super(AcquiaCloudTaskFailedException, self).__init__(message)
         self.message = message
         self.task = task
+
+    def __str__(self):
+        """ Return the string representation of the exception.
+
+        Returns
+        -------
+        str
+            The error message and pretty printed Task object properties.
+        """
+        return "{msg}\n{task}".format(msg=self.message, task=pformat(self.task, indent=4))

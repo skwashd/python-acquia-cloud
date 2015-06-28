@@ -1,7 +1,7 @@
 """ Dictionary of Acquia Cloud API resources. """
 
 from .acquiadata import AcquiaData
-
+from ..exceptions import AcquiaCloudNoDataException
 
 class AcquiaList(AcquiaData, dict):
 
@@ -18,31 +18,30 @@ class AcquiaList(AcquiaData, dict):
         self.set_base_uri(base_uri)
         AcquiaData.__init__(self, self.uri, auth)
 
-
     def __delitem__(self, key):
         """ See dict.__del_item__(). """
         super(AcquiaList, self).__delitem__(key)
-        sorted_keys = []
+        self.sorted_keys = []
 
     def __setitem__(self, key, value):
         """ See dict.__set_item__(). """
         super(AcquiaList, self).__setitem__(key, value)
-        sorted_keys = []
+        self.sorted_keys = []
 
-    def get_resource_uri(self, id):
+    def get_resource_uri(self, res):
         """ Generate the resource URI.
 
         Parameters
         ----------
-        id : int
-            The identified of the resource.
+        res : mixed
+            The identifier of the resource.
 
         Returns
         -------
         str
             The resource URI.
         """
-        return '{base_uri}/{id}'.format(base_uri=self.uri, id=int(id))
+        return '{base_uri}/{res}'.format(base_uri=self.uri, res=res)
 
     def first(self):
         """ Retrieve the first item in the dictionary.
@@ -53,8 +52,7 @@ class AcquiaList(AcquiaData, dict):
             The first resource in the dictionary.
         """
         if not len(self):
-            # FIXME Raise an exception here.
-            return None
+            raise AcquiaCloudNoDataException('No data available')
 
         key = self.search_pos(0)
         return self[key]
@@ -76,8 +74,7 @@ class AcquiaList(AcquiaData, dict):
             The last resource in the dictionary.
         """
         if not len(self):
-            # FIXME Raise an exception here.
-            return None
+            raise AcquiaCloudNoDataException('No data available')
 
         key = self.search_pos(-1)
         return self[key]
@@ -97,3 +94,13 @@ class AcquiaList(AcquiaData, dict):
         """
         keys = self.get_sorted_keys()
         return keys[pos]
+
+    def set_base_uri(self, base_uri):
+        """ Set the base URI for the resource.
+
+        Parameters
+        ----------
+        base_uri : str
+            The base URI to use for generating the new URI.
+        """
+        self.uri = base_uri

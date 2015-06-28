@@ -1,13 +1,13 @@
 """Database Backup."""
 
-import httplib2
-from ..connection import Connection
 from .acquiaresource import AcquiaResource
-
 
 class Backup(AcquiaResource):
 
     """Acquia Cloud database backup."""
+
+    valid_keys = ['completed', 'created', 'description', 'id', 'percentage', 'queue',
+                  'recipient', 'result', 'sender', 'started', 'state']
 
     def delete(self):
         """Delete the current backup resource.
@@ -18,8 +18,8 @@ class Backup(AcquiaResource):
             Was the backup deleted?
 
         """
-        response = self.request(method='DELETE')
-        return response.ok
+        self.request(method='DELETE')
+        return True
 
     def download(self, target_file):
         """Download a database backup from Acquia Cloud & write it to a file.
@@ -36,16 +36,13 @@ class Backup(AcquiaResource):
 
         """
         response = self.request()
-        backup = response.content
-
-        # We do this as acapi_request() assumes response is a json string.
-        http = httplib2.Http(proxy_info=Connection.proxy_info())
+        backup = response
 
         uri = backup['link'].encode('ascii', 'ignore')
-        resp, content = http.request(uri, 'GET')
+        content = self.request(uri=uri, decode_json=False)
 
-        file = open(target_file, 'wb')
-        file.write(content)
-        file.close()
+        backup_file = open(target_file, 'wb')
+        backup_file.write(content)
+        backup_file.close()
 
         return True

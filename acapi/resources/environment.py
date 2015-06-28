@@ -8,12 +8,13 @@ from .domain import Domain
 from .domainlist import DomainList
 from .server import Server
 from .serverlist import ServerList
-from .task import Task
-
 
 class Environment(AcquiaResource):
 
     """Environment associated with a site."""
+
+    #: Valid keys for environment object.
+    valid_keys = ['name', 'vcs_path', 'ssh_host', 'db_clusters', 'default_domain', 'livedev']
 
     def copy_files(self, target):
         """Copy files to another environment.
@@ -28,18 +29,13 @@ class Environment(AcquiaResource):
         bool
             Were the files successfully copied?
         """
-        p = re.compile('/envs/(.*)')
-        m = p.search(self.uri)
-        source = m.group(1)
-
-        base_uri = p.sub('/files-copy/\g<1>', self.uri)
+        pattern = re.compile('/envs/(.*)')
+        base_uri = pattern.sub(r'/files-copy/\g<1>', self.uri)
         uri = '{uri}/{target}'.format(uri=base_uri, target=target)
-        response = self.request(method='POST', uri=uri)
-        task_data = response.content
 
-        task = Task(self.uri, self.auth, data=task_data).wait()
-        if None == task['completed']:
-            raise Exception('Failed to copy files')
+        task_data = self.request(uri=uri, method='POST')
+        task = self.create_task(uri, task_data)
+        task.wait()
 
         return True
 
@@ -68,12 +64,6 @@ class Environment(AcquiaResource):
             Dictionary of the databases keyed by name.
         """
         dbs = DatabaseList(self.uri, self.auth)
-        response = self.request(uri=dbs.uri)
-        for db in response.content:
-            name = db['name'].encode('ascii', 'ignore')
-            db_uri = dbs.get_resource_uri(name)
-            dbs[name] = Database(db_uri, self.auth, data=db)
-
         return dbs
 
     def deploy_code(self, path):
@@ -91,12 +81,10 @@ class Environment(AcquiaResource):
         """
         uri = '{}/code-deploy'.format(self.uri)
         params = {'path': path}
-        response = self.request(uri=uri, method='POST', params=params)
-        task_data = response.content
 
-        task = Task(self.uri, self.auth, data=task_data).wait()
-        if None == task['completed']:
-            raise Exception('Failed to deploy code.')
+        task_data = self.request(uri=uri, method='POST', params=params)
+        task = self.create_task(uri, task_data)
+        task.wait()
 
         return True
 
@@ -123,13 +111,6 @@ class Environment(AcquiaResource):
 
         """
         domains = DomainList(self.uri, self.auth)
-
-        response = self.request(domains.uri)
-        for domain in response.content:
-            name = domain['name'].encode('ascii', 'ignore')
-            domain_uri = domains.get_resource_uri(name)
-            domains[name] = Domain(domain_uri, self.auth, data=domain)
-
         return domains
 
     def livedev(self, enable, discard=True):
@@ -157,12 +138,9 @@ class Environment(AcquiaResource):
         if discard:
             params['discard'] = 1
 
-        response = self.request(uri=uri, method='POST', params=params)
-        task_data = response.content
-
-        task = Task(self.uri, self.auth, data=task_data).wait()
-        if None == task['completed']:
-            raise Exception('Failed to {action} live development.'.format(action=action))
+        task_data = self.request(uri=uri, method='POST', params=params)
+        task = self.create_task(uri, task_data)
+        task.wait()
 
         return self
 
@@ -185,11 +163,4 @@ class Environment(AcquiaResource):
 
         """
         servers = ServerList(self.uri, self.auth)
-
-        response = self.request(uri=servers.uri)
-        for server in response.content:
-            name = server['name'].encode('ascii', 'ignore')
-            server_uri = servers.get_resource_uri(name)
-            servers[name] = Server(server_uri, self.auth, data=server)
-
         return servers

@@ -7,4 +7,6 @@ class Server(AcquiaResource):
 
     """Acquia Cloud API Server."""
 
-    pass
+    valid_keys = ['name', 'fqdn', 'services', 'status', 'ami_type', 'ec2_region',
+                  'ec2_availability_zone']
+
