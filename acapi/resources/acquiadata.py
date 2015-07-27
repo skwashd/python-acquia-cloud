@@ -3,6 +3,7 @@
 import json
 import logging
 import requests
+import requests_cache
 
 from platform import python_version
 from pprint import pformat
@@ -95,9 +96,16 @@ class AcquiaData(object):
         if 'POST' == method:
             jdata = json.dumps(data)
             resp = requests.post(uri, auth=self.auth, headers=headers, params=params, data=jdata)
+            # This is a sledgehammer but fine grained invalidation is messy.
+            requests_cache.clear()
 
         if 'DELETE' == method:
             resp = requests.delete(uri, auth=self.auth, headers=headers, params=params)
+            # Quickest and easiest way to do this.
+            requests_cache.clear()
+
+        if hasattr(resp, 'from_cache') and resp.from_cache:
+            LOGGER.info("%s %s returned from cache", method, uri)
 
         self.last_response = resp
 

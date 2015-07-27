@@ -3,6 +3,7 @@
 from datetime import datetime
 import logging
 import re
+import requests_cache
 import time
 
 from .acquiaresource import AcquiaResource
@@ -72,7 +73,10 @@ class Task(AcquiaResource):
             Is the task still pending completion?
         """
         # Ensure we don't have stale data
-        task = self.request()
+        
+        # Disable caching so we get the real response
+        with requests_cache.disabled():
+            task = self.request()
         state = task['state'].encode('ascii', 'ignore')
         self.data = task
         return state not in ['done', 'error']

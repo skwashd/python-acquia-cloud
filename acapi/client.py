@@ -1,6 +1,7 @@
 """Acquia Cloud API client."""
 
 import os
+import requests_cache
 
 from .resources import Site, SiteList, User
 from .exceptions import AcquiaCloudException
@@ -11,7 +12,8 @@ class Client(object):
 
     def __init__(
             self, user=None, token=None, realm='prod',
-            endpoint='https://cloudapi.acquia.com/v1'):
+            endpoint='https://cloudapi.acquia.com/v1',
+            cache=600):
         """Create an Acquia Cloud API REST client.
 
         Parameters
@@ -24,6 +26,8 @@ class Client(object):
             Acquia Cloud API realm (defaults to 'prod').
         endpoint : str
             Base Acquia Cloud API endpoint URL.
+        cache: int
+            How long API responses should be cached for.
 
         """
         if not user or not token:
@@ -34,6 +38,9 @@ class Client(object):
         self.auth = (user, token)
         self.realm = realm
         self.endpoint = endpoint
+
+        if None != cache:
+            requests_cache.install_cache(cache_name='acapi', backend='memory', expire_after=cache)
 
     def generate_uri(self, path):
         """Generate a URI for a ACAPI request.
