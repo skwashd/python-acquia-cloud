@@ -2,6 +2,8 @@
 
 This is a python client for using the [Acquia Cloud API](https://cloudapi.acquia.com/).
 
+[![Requirements Status][2]][1]
+
 ## Installation
 
 ### Installing With pip (recommended)
@@ -52,4 +54,7 @@ site.environment('dev').db(subname).backups().create().download('/tmp/backup.sql
 
 This library was created and maintained by [Dave Hall](http://davehall.com.au).
 
-See LICENSE
+See [LICENSE](LICENSE).
+
+[1]: https://requires.io/github/skwashd/python-acquia-cloud/requirements/
+[2]: https://requires.io/github/skwashd/python-acquia-cloud/requirements.svg?style=flat

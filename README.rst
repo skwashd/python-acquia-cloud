@@ -4,6 +4,8 @@ Python Library for Acquia's Cloud API
 This is a python client for using the `Acquia Cloud
 API <https://cloudapi.acquia.com/>`__.
 
+|Requirements Status|
+
 Installation
 ------------
 
@@ -61,4 +63,7 @@ Examples
 This library was created and maintained by `Dave
 Hall <http://davehall.com.au>`__.
 
-See LICENSE
+See `LICENSE <LICENSE>`__.
+
+.. |Requirements Status| image:: https://requires.io/github/skwashd/python-acquia-cloud/requirements.svg?style=flat
+   :target: https://requires.io/github/skwashd/python-acquia-cloud/requirements/
