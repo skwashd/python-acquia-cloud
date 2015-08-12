@@ -2,7 +2,8 @@
 
 This is a python client for using the [Acquia Cloud API](https://cloudapi.acquia.com/).
 
-[![Requirements Status][2]][1]
+[![PyPI Version](https://img.shields.io/pypi/v/acapi.svg)](https://pypi.python.org/pypi/acapi)
+[![Requirements Status](https://requires.io/github/skwashd/python-acquia-cloud/requirements.svg?branch=master)](https://requires.io/github/skwashd/python-acquia-cloud/requirements/?branch=master)
 
 ## Installation
 
