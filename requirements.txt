@@ -1,2 +1,3 @@
-requests==2.5.1
-setuptools>=0.7
+requests>=2.7
+requests-cache==0.4.10
+setuptools>=18

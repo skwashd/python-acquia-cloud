@@ -6,12 +6,12 @@ from setuptools import setup
 
 setup(
     name='acapi',
-    version='0.3.0',
+    version='0.4.0',
     description='Acquia Cloud API client.',
     author='Dave Hall',
     author_email='me@davehall.com.au',
     url='http://github.com/skwashd/python-acquia-cloud',
-    install_requires=['requests==2.5.1', 'requests-cache==0.4.10'],
+    install_requires=['requests>=2.7', 'requests-cache==0.4.10'],
     license='MIT',
     classifiers=[
         'Development Status :: 3 - Alpha',
