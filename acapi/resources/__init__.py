@@ -1,5 +1,10 @@
 """ Imports all the resources. """
 
+# Base classes
+from .acquiadata import AcquiaData
+from .acquialist import AcquiaList
+from .acquiaresource import AcquiaResource
+
 # Databases can be backed up
 from .backup import Backup
 from .backuplist import BackupList

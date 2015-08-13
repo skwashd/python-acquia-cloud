@@ -61,7 +61,7 @@ class AcquiaData(object):
         """ Fetch the last response object. """
         return self.last_response
 
-    def request(self, uri=None, method='GET', data=None, params=None, decode_json=True):
+    def request(self, uri=None, method='GET', data=None, params={}, decode_json=True):
         """Perform a HTTP requests.
 
         Parameters
