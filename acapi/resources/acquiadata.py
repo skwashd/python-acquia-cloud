@@ -4,6 +4,7 @@ import json
 import logging
 import requests
 import requests_cache
+import time
 
 from platform import python_version
 from pprint import pformat
@@ -91,7 +92,22 @@ class AcquiaData(object):
         uri = '{}.json'.format(uri)
 
         if 'GET' == method:
-            resp = requests.get(uri, auth=self.auth, headers=headers, params=params)
+            attempt = 0
+            while attempt <= 5:
+                resp = requests.get(uri, auth=self.auth, headers=headers, params=params)
+
+                if resp.status_code not in range(500, 505):
+                    # No need to retry for if not a server error type.
+                    break
+
+                attempt += 1
+                params['acapi_retry'] = attempt
+                time.sleep((attempt ** 2.0) / 10)
+
+
+            # We need to unset the property or it sticks around.
+            if 'acapi_retry' in params:
+                del params['acapi_retry']
 
         if 'POST' == method:
             jdata = json.dumps(data)
