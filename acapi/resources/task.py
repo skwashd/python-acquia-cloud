@@ -79,7 +79,6 @@ class Task(AcquiaResource):
             task = self.request()
 
         self.data = task
-        print 'Completed {}'.format(task['completed'])
         return None == task['completed']
 
     def wait(self):
