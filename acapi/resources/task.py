@@ -77,9 +77,10 @@ class Task(AcquiaResource):
         # Disable caching so we get the real response
         with requests_cache.disabled():
             task = self.request()
-        state = task['state'].encode('ascii', 'ignore')
+
         self.data = task
-        return state not in ['done', 'error']
+        print 'Completed {}'.format(task['completed'])
+        return None == task['completed']
 
     def wait(self):
         """Wait for a task to finish executing.
@@ -102,7 +103,7 @@ class Task(AcquiaResource):
 
         # Grab the cached response
         task = self.get()
-        if 'done' != task['state'] or None == task['completed']:
+        if 'done' != task['state']:
             raise AcquiaCloudTaskFailedException('Task {task_id} failed'
                                                  .format(task_id=task['id']), task)
 
