@@ -39,6 +39,7 @@ Examples
     domain = 'example.com'
 
     # Instantiate client using environment variables.
+    # Set ACQUIA_CLOUD_API_USER and ACQUIA_CLOUD_API_TOKEN accordingly.
     c = acapi.Client()
 
     # Get the site object.
