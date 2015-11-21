@@ -4,6 +4,7 @@ import requests_mock
 import unittest
 
 from .. import Client
+from ..exceptions import AcquiaCloudException
 
 @requests_mock.Mocker()
 class TestClient(unittest.TestCase):
@@ -31,6 +32,17 @@ class TestClient(unittest.TestCase):
         (user, token) = client._Client__find_credentials()
         self.assertEqual(user, 'user')
         self.assertEqual(token, 'token')
+
+    def test_find_credentials_none_set(self, m):
+        """
+        Tests finding the credentials in environment variables with empty credentials
+        """
+        os.environ['ACQUIA_CLOUD_API_USER'] = ''
+        os.environ['ACQUIA_CLOUD_API_TOKEN'] = ''
+        with self.assertRaises(AcquiaCloudException) as cm:
+            client = Client(cache=None)
+
+        self.assertEqual(str(cm.exception), 'Credentials not provided')
 
     def test_user(self, m):
         email = 'user@example.com'
