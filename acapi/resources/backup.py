@@ -1,5 +1,7 @@
 """Database Backup."""
 
+import urlparse
+
 from .acquiaresource import AcquiaResource
 
 class Backup(AcquiaResource):
@@ -38,8 +40,13 @@ class Backup(AcquiaResource):
         response = self.request()
         backup = response
 
-        uri = backup['link'].encode('ascii', 'ignore')
-        content = self.request(uri=uri, decode_json=False)
+        # Hack to make the download URL work for requests
+        url_parts = urlparse.urlparse(backup['link'])
+        query = urlparse.parse_qs(url_parts.query)
+        url_parts._replace(query='')
+        uri = url_parts.geturl()
+
+        content = self.request(uri=uri, params=query, decode_json=False)
 
         backup_file = open(target_file, 'wb')
         backup_file.write(content)
