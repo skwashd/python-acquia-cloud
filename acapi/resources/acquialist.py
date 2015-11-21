@@ -60,7 +60,7 @@ class AcquiaList(AcquiaData, dict):
     def get_sorted_keys(self):
         """ Get a sorted copy of the dictionary keys. """
         if not self.sorted_keys:
-            keys = self.keys()
+            keys = list(self.keys())
             self.sorted_keys = sorted(keys)
 
         return self.sorted_keys

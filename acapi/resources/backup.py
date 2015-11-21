@@ -1,6 +1,11 @@
 """Database Backup."""
 
-import urlparse
+try:
+    # Backwards compatible Python 3
+    import urllib.parse as urlparse
+except ImportError:
+    # Python 2.x
+    import urlparse
 
 from .acquiaresource import AcquiaResource
 

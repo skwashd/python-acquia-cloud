@@ -96,7 +96,7 @@ class AcquiaData(object):
             while attempt <= 5:
                 resp = requests.get(uri, auth=self.auth, headers=headers, params=params)
 
-                if resp.status_code not in range(500, 505):
+                if resp.status_code not in list(range(500, 505)):
                     # No need to retry for if not a server error type.
                     break
 
