@@ -8,8 +8,9 @@ python:
 #  - "nightly"
 
 matrix:
-        allow_failures:
-                python: 3.4
+  fast_finish: true
+  allow_failures:
+    - python: 3.4
 
 
 # command to install dependencies
