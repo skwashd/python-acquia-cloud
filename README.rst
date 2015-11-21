@@ -4,7 +4,9 @@ Python Library for Acquia's Cloud API
 This is a python client for using the `Acquia Cloud
 API <https://cloudapi.acquia.com/>`__.
 
-|PyPI Version| |Requirements Status|
+| |PyPI Version|
+| |Requirements Status|
+| |Build Status|
 
 Installation
 ------------
@@ -70,3 +72,5 @@ See `LICENSE <LICENSE>`__.
    :target: https://pypi.python.org/pypi/acapi
 .. |Requirements Status| image:: https://requires.io/github/skwashd/python-acquia-cloud/requirements.svg?branch=master
    :target: https://requires.io/github/skwashd/python-acquia-cloud/requirements/?branch=master
+.. |Build Status| image:: https://travis-ci.org/skwashd/python-acquia-cloud.png
+   :target: https://travis-ci.org/skwashd/python-acquia-cloud
