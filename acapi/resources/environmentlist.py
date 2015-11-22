@@ -16,7 +16,7 @@ class EnvironmentList(AcquiaList):
         """ Fetch and store environment objects. """
         envs = super(EnvironmentList, self).request(uri=self.uri)
         for env in envs:
-            name = env['name'].encode('ascii', 'ignore')
+            name = str(env['name'])
             env_uri = self.get_resource_uri(name)
             self.__setitem__(name, Environment(env_uri, self.auth, data=env))
 

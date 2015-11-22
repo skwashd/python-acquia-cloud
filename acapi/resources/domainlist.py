@@ -35,7 +35,7 @@ class DomainList(AcquiaList):
         """ Fetch and store domain objects. """
         domains = super(DomainList, self).request(uri=self.uri)
         for domain in domains:
-            name = domain['name'].encode('ascii', 'ignore')
+            name = str(domain['name'])
             domain_uri = self.get_resource_uri(name)
             self.__setitem__(name, Domain(domain_uri, self.auth, data=domain))
 

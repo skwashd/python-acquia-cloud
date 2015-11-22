@@ -16,7 +16,7 @@ class SiteList(AcquiaList):
         """ Fetch and store site objects. """
         sites = super(SiteList, self).request(uri=self.uri)
         for site in sites:
-            realm, name = site.encode('ascii', 'ignore').split(':')
+            realm, name = str(site).split(':')
             site_uri = self.get_resource_uri(name, realm=realm)
             self.__setitem__(name, Site(site_uri, self.auth))
 

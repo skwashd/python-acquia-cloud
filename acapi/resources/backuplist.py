@@ -35,7 +35,7 @@ class BackupList(AcquiaList):
         """ Fetch and store database object. """
         backups = super(BackupList, self).request(uri=self.uri)
         for backup in backups:
-            backup_id = backup['id'].encode('ascii', 'ignore')
+            backup_id = int(backup['id'])
             uri = self.get_resource_uri(backup_id)
             self.__setitem__(backup_id, Backup(uri, self.auth, data=backup))
 

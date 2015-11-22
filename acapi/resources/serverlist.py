@@ -16,7 +16,7 @@ class ServerList(AcquiaList):
         """ Fetch and store server objects. """
         servers = super(ServerList, self).request(uri=self.uri)
         for server in servers:
-            name = server['name'].encode('ascii', 'ignore')
+            name = str(server['name'])
             server_uri = self.get_resource_uri(name)
             self.__setitem__(name, Server(server_uri, self.auth, data=server))
 

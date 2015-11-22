@@ -44,7 +44,7 @@ class DatabaseList(AcquiaList):
         """ Fetch and store database objects. """
         dbs = super(DatabaseList, self).request(uri=self.uri)
         for db_obj in dbs:
-            name = db_obj['name'].encode('ascii', 'ignore')
+            name = str(db_obj['name'])
             db_uri = self.get_resource_uri(name)
             self.__setitem__(name, Database(db_uri, self.auth, data=db_obj))
 
