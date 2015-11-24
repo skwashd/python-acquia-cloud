@@ -42,7 +42,7 @@ class Task(AcquiaResource):
 
         self.loops = 0
 
-        AcquiaResource.__init__(self, uri, auth, data)
+        super(Task, self).__init__(uri, auth, data)
 
     def mangle_uri(self, uri, task_data):
         """Generate a URI for a task based on JSON task object.

@@ -71,18 +71,3 @@ class TestClient(BaseTest):
 
         sites = self.client.sites()
         self.assertIsInstance(sites, SiteList)
-
-
-    def test_user(self, mocker):
-        """
-        Tests calling the user() method.
-        """
-        email = 'user@example.com'
-        mocker.register_uri(
-            'GET',
-            'https://cloudapi.acquia.com/v1/me.json',
-            json={"authenticated_as": email}
-        )
-        client = Client(email, 'token')
-        user = client.user().get()
-        self.assertEqual(user['authenticated_as'], email)
