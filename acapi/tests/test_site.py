@@ -14,9 +14,27 @@ class TestSite(BaseTest):
         super(TestSite, self).setUp()
         self.site = self.client.site('mysite')
 
-    def test_copy_code(sel, mocker):
+    def test_copy_code(self, mocker):
         """ Tests copying code from one environment to another. """
-        pass
+
+        source = 'dev'
+        target = 'staging'
+
+        # Register the copy action.
+        mocker.register_uri(
+            'POST',
+            'https://cloudapi.acquia.com/v1/sites/prod:mysite/code-deploy/{source}/{target}.json'.format(source=source, target=target),
+            json=self.generate_task_dictionary(1137, 'waiting', False),
+        )
+
+        # Register the task.
+        mocker.register_uri(
+            'GET',
+            'https://cloudapi.acquia.com/v1/sites/prod:mysite/tasks/1137.json',
+            json=self.generate_task_dictionary(1137, 'done', True),
+        )
+
+        self.site.copy_code(source, target)
 
     def test_environment(self, mocker):
         """ Tests environment() method. """
