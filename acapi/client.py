@@ -1,4 +1,4 @@
-"""Acquia Cloud API client."""
+""" Acquia Cloud API client. """
 
 import os
 import requests_cache
@@ -39,7 +39,7 @@ class Client(object):
         self.realm = realm
         self.endpoint = endpoint
 
-        if None != cache:
+        if cache is not None:
             requests_cache.install_cache(cache_name='acapi', backend='memory', expire_after=cache)
 
     def generate_uri(self, path):

@@ -113,12 +113,14 @@ class AcquiaData(object):
             jdata = json.dumps(data)
             resp = requests.post(uri, auth=self.auth, headers=headers, params=params, data=jdata)
             # This is a sledgehammer but fine grained invalidation is messy.
-            requests_cache.clear()
+            if self.is_cache_enabled():
+                requests_cache.clear()
 
         if 'DELETE' == method:
             resp = requests.delete(uri, auth=self.auth, headers=headers, params=params)
             # Quickest and easiest way to do this.
-            requests_cache.clear()
+            if self.is_cache_enabled():
+                requests_cache.clear()
 
         if hasattr(resp, 'from_cache') and resp.from_cache:
             LOGGER.info("%s %s returned from cache", method, uri)
@@ -137,3 +139,6 @@ class AcquiaData(object):
             return resp.json()
 
         return resp.content
+
+    def is_cache_enabled(self):
+        return hasattr(requests.Session(), 'cache')
