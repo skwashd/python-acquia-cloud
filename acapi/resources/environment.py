@@ -66,13 +66,13 @@ class Environment(AcquiaResource):
         dbs = DatabaseList(self.uri, self.auth)
         return dbs
 
-    def deploy_code(self, path):
+    def deploy_code(self, git_ref):
         """Deploy code to the environment.
 
         Parameters
         ----------
-        path : string
-            The git reference path (branch/tag name) to deploy.
+        git_ref : string
+            The git reference to deploy. Must be a branch/tag name.
 
         Returns
         -------
@@ -80,7 +80,7 @@ class Environment(AcquiaResource):
             Was the code successfully deployed?
         """
         uri = '{}/code-deploy'.format(self.uri)
-        params = {'path': path}
+        params = {'path': git_ref}
 
         task_data = self.request(uri=uri, method='POST', params=params)
         task = self.create_task(uri, task_data)
@@ -135,7 +135,7 @@ class Environment(AcquiaResource):
             action = 'disable'
         uri = '{uri}/livedev/{action}'.format(uri=self.uri, action=action)
 
-        if discard:
+        if not enable and discard:
             params['discard'] = 1
 
         task_data = self.request(uri=uri, method='POST', params=params)
