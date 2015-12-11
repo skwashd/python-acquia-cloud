@@ -2,75 +2,50 @@
 import requests_mock
 
 from . import BaseTest
-from ..resources import DatabaseList
+from ..resources import AcquiaList, DatabaseList
 from ..exceptions import AcquiaCloudNoDataException
 
 @requests_mock.Mocker()
 class TestAcquiaList(BaseTest):
     """Tests the Acquia Cloud API db list class."""
 
-    dblist = None
+    alist = None
+
+    def setUp(self):
+        """ Fetches an empty acquia list derived object. """
+
+        self.alist = AcquiaList(None, False, {})
 
     def test_delitem(self, mocker):
         """ Test del item call. """
-        json = [
-            {
-                "db_cluster": "4",
-                "host": "srv-4",
-                "instance_name": "mysitedev",
-                "name": "mysite",
-                "password": "UeytUwwZxpfqutH",
-                "username": "mysitedev"
-            }
-        ]
+        val = 'value'
+        alist = AcquiaList(None, False, {'key': val})
 
-        mocker.register_uri(
-            'GET',
-            'https://cloudapi.acquia.com/v1/sites/prod:mysite/envs/dev/dbs.json',
-            json=json
-        )
-        
-        dblist = self.client.site('mysite').environment('dev').dbs()
-        del(dblist['mysite'])
+        self.assertEquals(alist['key'], val)
+
+        del(alist['key'])
+        with self.assertRaises(KeyError):
+            my_var = alist['key']
 
 
     def test_first_no_data(self, mocker):
         """ Test calling first with an empty oject. """
-        dblist = self.get_empty_list(mocker)
-
         with self.assertRaises(AcquiaCloudNoDataException):
-            dblist.first()
+            self.alist.first()
 
 
     def test_last_no_data(self, mocker):
         """ Test calling last with no data in object. """
-        dblist = self.get_empty_list(mocker)
-
         with self.assertRaises(AcquiaCloudNoDataException):
-            dblist.last()
+            self.alist.last()
 
 
     def test_set_base_uri(self, mocker):
         """ Test setting the base uri. """
-        dblist = self.get_empty_list(mocker)
 
         uri = 'https://google.com'
-        self.assertNotEquals(dblist.uri, uri)
+        self.assertNotEquals(self.alist.uri, uri)
 
-        dblist.set_base_uri(uri)
-        # FIXME This doesn't seem right.
-        self.assertEquals(dblist.uri, uri + '/dbs')
+        self.alist.set_base_uri(uri)
+        self.assertEquals(self.alist.uri, uri)
 
-
-    def get_empty_list(self, mocker):
-        """ Fetches an empty acquia list derived object. """
-
-        json = []
-
-        mocker.register_uri(
-            'GET',
-            'https://cloudapi.acquia.com/v1/sites/prod:mysite/envs/dev/dbs.json',
-            json=json
-        )
-        
-        return self.client.site('mysite').environment('dev').dbs()
