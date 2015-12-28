@@ -6,6 +6,7 @@ API <https://cloudapi.acquia.com/>`__.
 
 | |PyPI Version|
 | |Requirements Status|
+| |Coverage Status|
 | |Build Status|
 
 Installation
@@ -72,5 +73,7 @@ See `LICENSE <LICENSE>`__.
    :target: https://pypi.python.org/pypi/acapi
 .. |Requirements Status| image:: https://requires.io/github/skwashd/python-acquia-cloud/requirements.svg?branch=master
    :target: https://requires.io/github/skwashd/python-acquia-cloud/requirements/?branch=master
+.. |Coverage Status| image:: https://coveralls.io/repos/skwashd/python-acquia-cloud/badge.svg?branch=master&service=github
+   :target: https://coveralls.io/github/skwashd/python-acquia-cloud?branch=master
 .. |Build Status| image:: https://travis-ci.org/skwashd/python-acquia-cloud.png
    :target: https://travis-ci.org/skwashd/python-acquia-cloud
