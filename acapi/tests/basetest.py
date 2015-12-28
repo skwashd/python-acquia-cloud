@@ -36,7 +36,7 @@ class BaseTest(unittest.TestCase):
             "id": tid,
             "logs": "[02:20:58] [02:20:58] Started\n[02:21:00] [02:21:00] Failure\n",
             "queue": "files-migrate",
-            "result": "",
+            "result": None,
             "sender": "cloud_api",
             "started": now,
             "state": state
