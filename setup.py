@@ -11,7 +11,7 @@ setup(
     author='Dave Hall',
     author_email='me@davehall.com.au',
     url='http://github.com/skwashd/python-acquia-cloud',
-    install_requires=['requests>=2.7', 'requests-cache==0.4.10'],
+    install_requires=['requests>=2.9.1', 'requests-cache==0.4.10'],
     license='MIT',
     classifiers=[
         'Development Status :: 3 - Alpha',
@@ -22,6 +22,10 @@ setup(
         'Programming Language :: Python',
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
         ],
     packages=[
         'acapi',
