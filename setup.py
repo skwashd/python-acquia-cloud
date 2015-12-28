@@ -6,7 +6,7 @@ from setuptools import setup
 
 setup(
     name='acapi',
-    version='0.4.1',
+    version='0.4.2',
     description='Acquia Cloud API client.',
     author='Dave Hall',
     author_email='me@davehall.com.au',
