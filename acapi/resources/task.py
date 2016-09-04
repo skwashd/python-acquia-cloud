@@ -1,4 +1,4 @@
-""" Acquia API task queue resource. """
+"""Acquia API task queue resource."""
 
 from datetime import datetime
 import logging
@@ -6,25 +6,25 @@ import re
 import requests_cache
 import time
 
-from .acquiaresource import AcquiaResource
-from ..exceptions import AcquiaCloudTaskFailedException
+from acapi.exceptions import AcquiaCloudTaskFailedException
+from acapi.resources.acquiaresource import AcquiaResource
 
 LOGGER = logging.getLogger('acapi.resources.task')
 
-class Task(AcquiaResource):
 
-    """ Task queue resource. """
+class Task(AcquiaResource):
+    """Task queue resource."""
 
     #: Task polling interval in seconds.
     POLL_INTERVAL = 3
 
     #: Valid task properties
-    valid_keys = ['body', 'completed', 'cookie', 'created', 'description', 'hidden',
-                  'id', 'percentage', 'queue', 'received', 'recipient', 'result',
-                  'sender', 'started', 'state']
+    valid_keys = ['body', 'completed', 'cookie', 'created', 'description',
+                  'hidden', 'id', 'percentage', 'queue', 'received',
+                  'recipient', 'result', 'sender', 'started', 'state']
 
     def __init__(self, uri, auth, data=None, hack_uri=True):
-        """ Constructor.
+        """Constructor.
 
         Parameters
         ----------
@@ -65,7 +65,7 @@ class Task(AcquiaResource):
         return task_uri
 
     def pending(self):
-        """ Check if a task is still pending.
+        """Check if a task is still pending.
 
         Returns
         -------
@@ -73,7 +73,7 @@ class Task(AcquiaResource):
             Is the task still pending completion?
         """
         # Ensure we don't have stale data
-        
+
         # Disable caching so we get the real response
         with requests_cache.disabled():
             task = self.request()
@@ -104,10 +104,12 @@ class Task(AcquiaResource):
         task = self.get()
         if 'done' != task['state']:
             raise AcquiaCloudTaskFailedException('Task {task_id} failed'
-                                                 .format(task_id=task['id']), task)
+                                                 .format(task_id=task['id']),
+                                                 task)
 
         end = datetime.now()
         delta = end - start
-        LOGGER.info("Waited %.2f seconds for task to complete", delta.total_seconds())
+        LOGGER.info("Waited %.2f seconds for task to complete",
+                    delta.total_seconds())
 
         return self

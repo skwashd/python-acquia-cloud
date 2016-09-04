@@ -1,8 +1,11 @@
-""" Tests the database list class. """
+"""Tests the database list class."""
+
 import requests_mock
 
-from . import BaseTest
-from ..resources import Database, DatabaseList
+from acapi.resources.database import Database
+from acapi.resources.databaselist import DatabaseList
+from acapi.tests import BaseTest
+
 
 @requests_mock.Mocker()
 class TestDatabaseList(BaseTest):
@@ -23,9 +26,12 @@ class TestDatabaseList(BaseTest):
         ]
 
         # Register the list.
+        url = 'https://cloudapi.acquia.com/v1/' \
+              'sites/prod:mysite/envs/dev/dbs.json'
+
         mocker.register_uri(
             'GET',
-            'https://cloudapi.acquia.com/v1/sites/prod:mysite/envs/dev/dbs.json',
+            url,
             json=json
         )
 
@@ -43,11 +49,12 @@ class TestDatabaseList(BaseTest):
             json=self.generate_task_dictionary(2346, 'done', True),
         )
 
-        db = self.client.site('mysite').environment('dev').dbs().create('newdb')
+        db = self.client.site('mysite').environment('dev')\
+            .dbs().create('newdb')
         self.assertIsInstance(db, Database)
 
     def test_get(self, mocker):
-        """ Test get call. """
+        """Test get call."""
         json = [
             {
                 "db_cluster": "4",
@@ -59,11 +66,14 @@ class TestDatabaseList(BaseTest):
             }
         ]
 
+        url = 'https://cloudapi.acquia.com/v1/' \
+              'sites/prod:mysite/envs/dev/dbs.json'
+
         mocker.register_uri(
             'GET',
-            'https://cloudapi.acquia.com/v1/sites/prod:mysite/envs/dev/dbs.json',
+            url,
             json=json
         )
-        
+
         dblist = self.client.site('mysite').environment('dev').dbs()
         self.assertIsInstance(dblist, DatabaseList)

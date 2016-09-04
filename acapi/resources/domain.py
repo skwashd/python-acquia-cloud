@@ -1,11 +1,12 @@
-""" Acquia Cloud API domain resource. """
+"""Acquia Cloud API domain resource. """
 
 import re
-from .acquiaresource import AcquiaResource
+
+from acapi.resources.acquiaresource import AcquiaResource
+
 
 class Domain(AcquiaResource):
-
-    """ Domain record associated with an environment. """
+    """Domain record associated with an environment."""
 
     valid_keys = ['name']
 
@@ -57,7 +58,8 @@ class Domain(AcquiaResource):
         current_env = matches.group(1)
         domain = matches.group(2)
 
-        move_uri = ('%s/%s' % (pattern.sub(r'/domain-move/\g<1>', self.uri), target))
+        move_uri = (
+            '%s/%s' % (pattern.sub(r'/domain-move/\g<1>', self.uri), target))
         data = {'domains': [domain]}
 
         task_data = self.request(uri=move_uri, method='POST', data=data)

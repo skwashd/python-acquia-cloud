@@ -1,16 +1,19 @@
 """ Tests the backup list class. """
+
 import json
+
 import requests_mock
 
-from . import BaseTest
-from ..resources import Backup, BackupList
+from acapi.resources import Backup
+from acapi.tests import BaseTest
+
 
 @requests_mock.Mocker()
 class TestBackupList(BaseTest):
     """Tests the Acquia Cloud API backup list class."""
 
     def test_create(self, mocker):
-        """ Test create call. """
+        """Test create call."""
 
         backups = [
             {
@@ -22,26 +25,33 @@ class TestBackupList(BaseTest):
                 "path": "backups/dev-mysite-mysitedev-2012-03-07.sql.gz",
                 "started": 1331110381,
                 "type": "daily",
-                "link": "http://mysite.devcloud.acquia-sites.com/AH_DOWNLOAD?t=1342468716&prod=7386761671e68e517a74b7b790ef74d8a8fba7336dbc891cfef133bd29a7b238&d=/mnt/files/mysite.prod/backups/prod-mysite-mysite-2012-07-15.sql.gz"
+                "link": "http://mysite.devcloud.acquia-sites.com/AH_DOWNLOAD?t=1342468716&prod=7386761671e68e517a74b7b790ef74d8a8fba7336dbc891cfef133bd29a7b238&d=/mnt/files/mysite.prod/backups/prod-mysite-mysite-2012-07-15.sql.gz",  # noqa: E501
             },
         ]
 
         # Register the list.
+        url = 'https://cloudapi.acquia.com/v1/' \
+              'sites/prod:mysite/envs/dev/dbs/mysite/backups.json'
+
         mocker.register_uri(
             'GET',
-            'https://cloudapi.acquia.com/v1/sites/prod:mysite/envs/dev/dbs/mysite/backups.json',
+            url,
             json=backups
         )
 
         # Register the create
+        url = 'https://cloudapi.acquia.com/v1/' \
+              'sites/prod:mysite/envs/dev/dbs/mysite/backups.json'
+
         mocker.register_uri(
             'POST',
-            'https://cloudapi.acquia.com/v1/sites/prod:mysite/envs/dev/dbs/mysite/backups.json',
+            url,
             json=self.generate_task_dictionary(1116, 'waiting', False),
         )
 
-        task=self.generate_task_dictionary(1116, 'done', True)
-        # Yo Dawg, I herd you like JSON, so I put a JSON in your JSON so you can JSON while you JSON.
+        task = self.generate_task_dictionary(1116, 'done', True)
+        # Yo Dawg, I herd you like JSON, so I put a JSON in your JSON
+        # so you can JSON while you JSON.
         task['result'] = json.dumps({'backupid': 37})
 
         # Register the task.
@@ -51,5 +61,6 @@ class TestBackupList(BaseTest):
             json=task
         )
 
-        backup = self.client.site('mysite').environment('dev').db('mysite').backups().create()
+        backup = self.client.site('mysite').environment('dev').db(
+            'mysite').backups().create()
         self.assertIsInstance(backup, Backup)

@@ -1,22 +1,24 @@
-""" Test the AcquiaData class."""
-import requests
-import requests_mock
+"""Test the AcquiaData class."""
 import time
 import unittest
 
-from .. import AcquiaData, Task
+import requests
+import requests_mock
+
+from acapi.resources.acquiadata import AcquiaData
+from acapi.resources.task import Task
+
 
 @requests_mock.Mocker()
 class TestAcquiaData(unittest.TestCase):
-
-    """ Tests the AcquiaData class. """
+    """Tests the AcquiaData class."""
 
     base_uri = 'http://example.com/api/'
 
     domain_uri = base_uri + 'sites/prod:example/envs/test/domains/example.com'
 
     def test_create_task(self, m):
-        """ Test create_task method. """
+        """Test create_task method."""
         task = {
             "completed": None,
             "created": int(time.time()),
@@ -37,19 +39,19 @@ class TestAcquiaData(unittest.TestCase):
         self.assertIsInstance(atask, Task)
 
     def test_create_task_empty_string(self, m):
-        """ Test create_task method with empty string as task data. """
+        """Test create_task method with empty string as task data."""
         adata = AcquiaData(self.domain_uri, None, {})
         with self.assertRaises(TypeError):
             adata.create_task(self.domain_uri, '')
 
     def test_create_task_empty_dict(self, m):
-        """ Test create_task method with invalid data. """
+        """Test create_task method with invalid data."""
         adata = AcquiaData(self.domain_uri, None, {})
         with self.assertRaises(KeyError):
             adata.create_task(self.domain_uri, {})
 
     def test_get_404(self, m):
-        """ Tests a GET request that receives a 404 response. """
+        """Tests a GET request that receives a 404 response."""
 
         uri = self.base_uri + 'invalid'
 
@@ -61,9 +63,8 @@ class TestAcquiaData(unittest.TestCase):
         with self.assertRaises(requests.exceptions.HTTPError):
             adata.request()
 
-
     def test_get_500s_retry(self, m):
-        """ Tests a GET request that receives an initial 50x response, then retries. """
+        """Tests retrying a GET request that receives 50x response."""
         uri = self.base_uri + 'test'
 
         m.register_uri('GET', uri + '.json', status_code=503)
@@ -75,6 +76,7 @@ class TestAcquiaData(unittest.TestCase):
 
         response = adata.request()
         self.assertIsInstance(response, dict)
+
 
 if __name__ == '__main__':
     unittest.main()

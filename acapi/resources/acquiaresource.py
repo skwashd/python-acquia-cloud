@@ -1,17 +1,16 @@
 """Generic Acquia Cloud API resource."""
 
-from .acquiadata import AcquiaData
+from acapi.resources.acquiadata import AcquiaData
 
 
 class AcquiaResource(AcquiaData):
-
     """Acquia Cloud API resource."""
 
     #: Valid properties for this resource object
     valid_keys = None
 
     def __getitem__(self, key):
-        """ Get the value of an object property. """
+        """Get the value of an object property."""
         if None == self.data:
             self.get()
 

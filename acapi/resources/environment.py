@@ -1,20 +1,22 @@
 """ Acquia Cloud API Environment resource. """
 
 import re
-from .acquiaresource import AcquiaResource
-from .database import Database
-from .databaselist import DatabaseList
-from .domain import Domain
-from .domainlist import DomainList
-from .server import Server
-from .serverlist import ServerList
+
+from acapi.resources.acquiaresource import AcquiaResource
+from acapi.resources.database import Database
+from acapi.resources.databaselist import DatabaseList
+from acapi.resources.domain import Domain
+from acapi.resources.domainlist import DomainList
+from acapi.resources.server import Server
+from acapi.resources.serverlist import ServerList
+
 
 class Environment(AcquiaResource):
-
     """Environment associated with a site."""
 
     #: Valid keys for environment object.
-    valid_keys = ['name', 'vcs_path', 'ssh_host', 'db_clusters', 'default_domain', 'livedev']
+    valid_keys = ['name', 'vcs_path', 'ssh_host', 'db_clusters',
+                  'default_domain', 'livedev']
 
     def copy_files(self, target):
         """Copy files to another environment.
@@ -143,7 +145,6 @@ class Environment(AcquiaResource):
         task.wait()
 
         return self
-
 
     def server(self, hostname):
         """Fetch a server associated with the environment.

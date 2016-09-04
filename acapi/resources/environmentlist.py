@@ -1,19 +1,19 @@
-""" Acquia Cloud API server list resource. """
+"""Acquia Cloud API server list resource."""
 
-from .acquialist import AcquiaList
-from .environment import Environment
+from acapi.resources.acquialist import AcquiaList
+from acapi.resources.environment import Environment
+
 
 class EnvironmentList(AcquiaList):
-
     """Dict of Acquia Cloud API Environment resources keyed by short name."""
 
     def __init__(self, base_uri, auth, *args, **kwargs):
-        """ Constructor. """
+        """Constructor."""
         super(EnvironmentList, self).__init__(base_uri, auth, *args, **kwargs)
         self.fetch()
 
     def fetch(self):
-        """ Fetch and store environment objects. """
+        """Fetch and store environment objects."""
         envs = super(EnvironmentList, self).request(uri=self.uri)
         for env in envs:
             name = str(env['name'])
@@ -21,7 +21,7 @@ class EnvironmentList(AcquiaList):
             self.__setitem__(name, Environment(env_uri, self.auth, data=env))
 
     def get_resource_uri(self, name):
-        """ Generate the resource URI.
+        """Generate the resource URI.
 
         Parameters
         ----------
@@ -36,7 +36,7 @@ class EnvironmentList(AcquiaList):
         return '{base_uri}/{name}'.format(base_uri=self.uri, name=name)
 
     def set_base_uri(self, base_uri):
-        """ Set the base URI for server resources.
+        """Set the base URI for server resources.
 
         Parameters
         ----------

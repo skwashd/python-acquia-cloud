@@ -1,10 +1,12 @@
-""" Tests the backup class. """
-import requests_mock
+"""Tests the backup class."""
+
 import os
 import tempfile
 
-from . import BaseTest
-from ..resources import Backup
+import requests_mock
+
+from acapi.tests import BaseTest
+
 
 @requests_mock.Mocker()
 class TestBackup(BaseTest):
@@ -14,12 +16,17 @@ class TestBackup(BaseTest):
 
     def setUp(self):
         super(TestBackup, self).setUp()
-        self.backup = self.client.site('mysite').environment('dev').db('mysite').backup(22)
+        self.backup = self.client.site('mysite').environment('dev').db(
+            'mysite').backup(22)
 
     def test_delete(self, mocker):
+        """Test delte operation."""
+        url = 'https://cloudapi.acquia.com/v1/' \
+              'sites/prod:mysite/envs/dev/dbs/mysite/backups/22.json'
+
         mocker.register_uri(
             'DELETE',
-            'https://cloudapi.acquia.com/v1/sites/prod:mysite/envs/dev/dbs/mysite/backups/22.json',
+            url,
             json=self.generate_task_dictionary(1117, 'waiting', False),
         )
         mocker.register_uri(
@@ -30,10 +37,11 @@ class TestBackup(BaseTest):
         self.assertTrue(self.backup.delete())
 
     def test_download(self, mocker):
+        """Test the download operation."""
         text = str(bytes([
-            0x1f, 0x8b, 0x08, 0x08, 0x7f, 0x6e, 0x80, 0x56, 0x00, 0x03, 0x74, 0x65,
-            0x73, 0x74, 0x2e, 0x73, 0x71, 0x6c, 0x00, 0x03, 0x00, 0x00, 0x00, 0x00,
-            0x00, 0x00, 0x00, 0x00, 0x00
+            0x1f, 0x8b, 0x08, 0x08, 0x7f, 0x6e, 0x80, 0x56, 0x00, 0x03, 0x74,
+            0x65, 0x73, 0x74, 0x2e, 0x73, 0x71, 0x6c, 0x00, 0x03, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
         ]))
 
         backup = {
@@ -45,17 +53,20 @@ class TestBackup(BaseTest):
             "path": "backups/dev-mysite-mysitedev-2012-03-07.sql.gz",
             "started": "1331110381",
             "type": "daily",
-            "link": "http://mysite.devcloud.acquia-sites.com/AH_DOWNLOAD?t=1342468716&prod=7386761671e68e517a74b7b790ef74d8a8fba7336dbc891cfef133bd29a7b238&d=/mnt/files/mysite.prod/backups/prod-mysite-mysite-2012-07-15.sql.gz"
+            "link": "http://mysite.devcloud.acquia-sites.com/AH_DOWNLOAD?t=1342468716&prod=7386761671e68e517a74b7b790ef74d8a8fba7336dbc891cfef133bd29a7b238&d=/mnt/files/mysite.prod/backups/prod-mysite-mysite-2012-07-15.sql.gz"  # noqa: E501
         }
+        url = 'https://cloudapi.acquia.com/v1/' \
+              'sites/prod:mysite/envs/dev/dbs/mysite/backups/22.json'
+
         mocker.register_uri(
             'GET',
-            'https://cloudapi.acquia.com/v1/sites/prod:mysite/envs/dev/dbs/mysite/backups/22.json',
+            url,
             json=backup
         )
 
         mocker.register_uri(
             'GET',
-            'http://mysite.devcloud.acquia-sites.com/AH_DOWNLOAD?t=1342468716&prod=7386761671e68e517a74b7b790ef74d8a8fba7336dbc891cfef133bd29a7b238&d=/mnt/files/mysite.prod/backups/prod-mysite-mysite-2012-07-15.sql.gz',
+            'http://mysite.devcloud.acquia-sites.com/AH_DOWNLOAD?t=1342468716&prod=7386761671e68e517a74b7b790ef74d8a8fba7336dbc891cfef133bd29a7b238&d=/mnt/files/mysite.prod/backups/prod-mysite-mysite-2012-07-15.sql.gz',  # noqa: E501
             text=text
         )
 

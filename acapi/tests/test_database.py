@@ -1,15 +1,18 @@
-""" Tests the database class. """
+"""Tests the database class."""
+
 import requests_mock
 
-from . import BaseTest
-from ..resources import Database, BackupList
+from acapi.resources.backuplist import BackupList
+from acapi.resources.database import Database
+from acapi.tests import BaseTest
+
 
 @requests_mock.Mocker()
 class TestDatabase(BaseTest):
     """Tests the Acquia Cloud API db class."""
 
     def test_backups(self, mocker):
-        """ Test create call. """
+        """Test create call."""
 
         json = [
             {
@@ -21,25 +24,32 @@ class TestDatabase(BaseTest):
                 "path": "backups/dev-mysite-mysitedev-2012-03-07.sql.gz",
                 "started": "1331110381",
                 "type": "daily",
-                "link": "http://mysite.devcloud.acquia-sites.com/AH_DOWNLOAD?t=1342468716&prod=7386761671e68e517a74b7b790ef74d8a8fba7336dbc891cfef133bd29a7b238&d=/mnt/files/mysite.prod/backups/prod-mysite-mysite-2012-07-15.sql.gz"
+                "link": "http://mysite.devcloud.acquia-sites.com/AH_DOWNLOAD?t=1342468716&prod=7386761671e68e517a74b7b790ef74d8a8fba7336dbc891cfef133bd29a7b238&d=/mnt/files/mysite.prod/backups/prod-mysite-mysite-2012-07-15.sql.gz",  # noqa: E501
             },
         ]
 
+        url = 'https://cloudapi.acquia.com/v1/' \
+              'sites/prod:mysite/envs/dev/dbs/mysite/backups.json'
+
         mocker.register_uri(
             'GET',
-            'https://cloudapi.acquia.com/v1/sites/prod:mysite/envs/dev/dbs/mysite/backups.json',
+            url,
             json=json
         )
 
-        backups = self.client.site('mysite').environment('dev').db('mysite').backups()
+        backups = self.client.site('mysite').environment('dev').db(
+            'mysite').backups()
         self.assertIsInstance(backups, BackupList)
 
     def test_copy(self, mocker):
-        """ Test database copy call. """
+        """Test database copy call."""
+
+        url = 'https://cloudapi.acquia.com/v1/' \
+              'sites/prod:mysite/dbs/mysite/db-copy/dev/staging.json'
 
         mocker.register_uri(
             'POST',
-            'https://cloudapi.acquia.com/v1/sites/prod:mysite/dbs/mysite/db-copy/dev/staging.json',
+            url,
             json=self.generate_task_dictionary(1210, 'waiting', False),
         )
 
@@ -49,5 +59,6 @@ class TestDatabase(BaseTest):
             json=self.generate_task_dictionary(1210, 'done', True),
         )
 
-        db = self.client.site('mysite').environment('dev').db('mysite').copy('staging')
+        db = self.client.site('mysite').environment('dev').db('mysite').copy(
+            'staging')
         self.assertIsInstance(db, Database)

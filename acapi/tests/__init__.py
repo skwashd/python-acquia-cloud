@@ -1,3 +1,7 @@
 """ACAPI Tests."""
 
-from .basetest import BaseTest
+from acapi.tests.basetest import BaseTest
+
+__all__ = [
+    'BaseTest',
+]

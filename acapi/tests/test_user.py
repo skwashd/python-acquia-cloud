@@ -1,19 +1,20 @@
-""" Tests the Acquia Cloud API User class. """
-import requests_mock
+"""Tests the Acquia Cloud API User class."""
+
 import sys
 import unittest
 
-from . import BaseTest
-from .. import Client
-from ..resources import User
-from ..exceptions import AcquiaCloudException
+import requests_mock
+
+from acapi import Client
+from acapi.tests.basetest import BaseTest
+
 
 @requests_mock.Mocker()
 class TestUser(BaseTest):
     """Tests the Acquia Cloud API User class."""
 
     def test_drushrc(self, mocker):
-        """ Tests calling the drushrc() method. """
+        """Tests calling the drushrc() method."""
         json = {
             "mysite": {
                 "dev": "$aliases['dev'] = array(...);",
@@ -29,9 +30,10 @@ class TestUser(BaseTest):
         drushrc = self.client.user().drushrc()
         self.assertTrue('mysite' in drushrc.keys())
 
-    @unittest.skipIf(sys.version_info >= (2, 8, 0), "Recursive copy() call loop on 3.x")
+    @unittest.skipIf(sys.version_info >= (2, 8, 0),
+                     "Recursive copy() call loop on 3.x")
     def test_user(self, mocker):
-        """ Tests fetching a user object. """
+        """Tests fetching a user object."""
         email = 'user@example.com'
         mocker.register_uri(
             'GET',

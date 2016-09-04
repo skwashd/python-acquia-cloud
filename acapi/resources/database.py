@@ -1,16 +1,18 @@
-""" Database resource. """
+"""Database resource."""
 
 import re
-from .acquiaresource import AcquiaResource
-from .backup import Backup
-from .backuplist import BackupList
+
+from acapi.resources.acquiaresource import AcquiaResource
+from acapi.resources.backup import Backup
+from acapi.resources.backuplist import BackupList
+
 
 class Database(AcquiaResource):
-
     """Environment database."""
 
     #: Valid keys for environment object.
-    valid_keys = ['db_cluster', 'host', 'instance_name', 'name', 'password', 'username']
+    valid_keys = ['db_cluster', 'host', 'instance_name', 'name', 'password',
+                  'username']
 
     def backup(self, backup_id):
         """Fetch a backup.
@@ -25,7 +27,8 @@ class Database(AcquiaResource):
         Backup
             The backup object.
         """
-        uri = '{uri}/backups/{backup_id}'.format(uri=self.uri, backup_id=backup_id)
+        uri = '{uri}/backups/{backup_id}'.format(uri=self.uri,
+                                                 backup_id=backup_id)
         return Backup(uri, self.auth)
 
     def backups(self):

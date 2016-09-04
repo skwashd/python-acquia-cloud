@@ -1,8 +1,10 @@
-""" Tests the domain class. """
+"""Tests the domain class."""
+
 import requests_mock
 
-from . import BaseTest
-from ..resources import Domain
+from acapi.resources import Domain
+from acapi.tests import BaseTest
+
 
 @requests_mock.Mocker()
 class TestDomain(BaseTest):
@@ -12,14 +14,18 @@ class TestDomain(BaseTest):
 
     def setUp(self):
         super(TestDomain, self).setUp()
-        self.domain = self.client.site('mysite').environment('prod').domain('foo.com')
+        self.domain = self.client.site('mysite').environment('prod').domain(
+            'foo.com')
 
     def test_cache_purge(self, mocker):
-        """ Test cache purge operation. """
+        """Test cache purge operation."""
         # Register the delete operation.
+        url = 'https://cloudapi.acquia.com/v1/' \
+              'sites/prod:mysite/envs/prod/domains/foo.com/cache.json'
+
         mocker.register_uri(
             'DELETE',
-            'https://cloudapi.acquia.com/v1/sites/prod:mysite/envs/prod/domains/foo.com/cache.json',
+            url,
             json=self.generate_task_dictionary(1137, 'waiting', False),
         )
         # Register the task.
@@ -29,13 +35,16 @@ class TestDomain(BaseTest):
             json=self.generate_task_dictionary(1137, 'done', True),
         )
         self.assertTrue(self.domain.cache_purge())
-    
+
     def test_delete(self, mocker):
-        """ Test domain delete operation. """
+        """Test domain delete operation."""
         # Register the delete operation.
+        url = 'https://cloudapi.acquia.com/v1/' \
+              'sites/prod:mysite/envs/prod/domains/foo.com.json'
+
         mocker.register_uri(
             'DELETE',
-            'https://cloudapi.acquia.com/v1/sites/prod:mysite/envs/prod/domains/foo.com.json',
+            url,
             json=self.generate_task_dictionary(1137, 'waiting', False),
         )
         # Register the task.
@@ -47,17 +56,25 @@ class TestDomain(BaseTest):
         self.assertTrue(self.domain.delete())
 
     def test_get(self, mocker):
+        """Test domain get operation."""
+        url = 'https://cloudapi.acquia.com/v1/' \
+              'sites/prod:mysite/envs/prod/domains/foo.com.json'
+
         mocker.register_uri(
             'GET',
-            'https://cloudapi.acquia.com/v1/sites/prod:mysite/envs/prod/domains/foo.com.json',
+            url,
             json={"name": 'foo.com'},
         )
-        self.assertEquals(self.domain.get()['name'], 'foo.com')
+        self.assertEqual(self.domain.get()['name'], 'foo.com')
 
     def test_move(self, mocker):
+        """Test domain move operation."""
+        url = 'https://cloudapi.acquia.com/v1/' \
+              'sites/prod:mysite/domain-move/prod/staging.json'
+
         mocker.register_uri(
             'POST',
-            'https://cloudapi.acquia.com/v1/sites/prod:mysite/domain-move/prod/staging.json',
+            url,
             json=self.generate_task_dictionary(1210, 'waiting', False),
         )
         mocker.register_uri(

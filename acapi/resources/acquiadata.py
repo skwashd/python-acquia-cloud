@@ -6,22 +6,23 @@ import requests
 import requests_cache
 import time
 
+from acapi.version import __version__
 from platform import python_version
 from pprint import pformat
-from ..version import __version__
 
 LOGGER = logging.getLogger('acapi.resources.acquiadata')
 
-class AcquiaData(object):
 
+class AcquiaData(object):
     """Acquia Cloud API abstract network resource."""
 
     #: User Agent string
-    USER_AGENT = 'Acquia Cloud API Client/{mver} (Python {pver})'.format(mver=__version__,
-                                                                         pver=python_version())
+    RAW_AGENT = 'Acquia Cloud API Client/{mver} (Python {pver})'
+    USER_AGENT = RAW_AGENT.format(mver=__version__,
+                                  pver=python_version())
 
     def __init__(self, uri, auth, data=None):
-        """ Constructor.
+        """Constructor.
 
         Parameters
         ----------
@@ -38,7 +39,7 @@ class AcquiaData(object):
         self.last_response = None
 
     def create_task(self, uri, data):
-        """ Create a new task object from a responses response object.
+        """Create a new task object from a responses response object.
 
         Parameters
         ----------
@@ -53,15 +54,16 @@ class AcquiaData(object):
             The Task object.
         """
         # We have to do this here to avoid circular dependencies
-        from .task import Task
+        from acapi.resources.task import Task
         task = Task(uri, self.auth, data=data)
         return task
 
     def get_last_response(self):
-        """ Fetch the last response object. """
+        """Fetch the last response object. """
         return self.last_response
 
-    def request(self, uri=None, method='GET', data=None, params={}, decode_json=True):
+    def request(self, uri=None, method='GET',
+                data=None, params={}, decode_json=True):
         """Perform a HTTP requests.
 
         Parameters
@@ -82,6 +84,7 @@ class AcquiaData(object):
         dict
             Decoded JSON response data as a dict object.
         """
+
         self.last_response = None
 
         if None == uri:
@@ -91,10 +94,12 @@ class AcquiaData(object):
 
         uri = '{}.json'.format(uri)
 
+        resp = None
         if 'GET' == method:
             attempt = 0
             while attempt <= 5:
-                resp = requests.get(uri, auth=self.auth, headers=headers, params=params)
+                resp = requests.get(uri, auth=self.auth,
+                                    headers=headers, params=params)
 
                 if resp.status_code not in list(range(500, 505)):
                     # No need to retry for if not a server error type.
@@ -104,20 +109,21 @@ class AcquiaData(object):
                 params['acapi_retry'] = attempt
                 time.sleep((attempt ** 2.0) / 10)
 
-
             # We need to unset the property or it sticks around.
             if 'acapi_retry' in params:
                 del params['acapi_retry']
 
         if 'POST' == method:
             jdata = json.dumps(data)
-            resp = requests.post(uri, auth=self.auth, headers=headers, params=params, data=jdata)
+            resp = requests.post(uri, auth=self.auth, headers=headers,
+                                 params=params, data=jdata)
             # This is a sledgehammer but fine grained invalidation is messy.
             if self.is_cache_enabled():
                 requests_cache.clear()
 
         if 'DELETE' == method:
-            resp = requests.delete(uri, auth=self.auth, headers=headers, params=params)
+            resp = requests.delete(uri, auth=self.auth, headers=headers,
+                                   params=params)
             # Quickest and easiest way to do this.
             if self.is_cache_enabled():
                 requests_cache.clear()
@@ -141,4 +147,9 @@ class AcquiaData(object):
         return resp.content
 
     def is_cache_enabled(self):
+        """Checks if requests cache is enabled.
+
+        :return: Cache status.
+        :rtype: bool.
+        """
         return hasattr(requests.Session(), 'cache')
