@@ -1,20 +1,21 @@
-""" Acquia Cloud API site resource. """
+"""Acquia Cloud API site resource. """
 
-from .acquiaresource import AcquiaResource
-from .environment import Environment
-from .environmentlist import EnvironmentList
-from .tasklist import TaskList
-from .task import Task
+from acapi.resources.acquiaresource import AcquiaResource
+from acapi.resources.environment import Environment
+from acapi.resources.environmentlist import EnvironmentList
+from acapi.resources.task import Task
+from acapi.resources.tasklist import TaskList
+
 
 class Site(AcquiaResource):
-
     """Site (or subscription) resource."""
 
     #: Valid keys for site object.
-    valid_keys = ['title', 'name', 'production_mode', 'unix_username', 'vcs_type', 'vcs_url']
+    valid_keys = ['title', 'name', 'production_mode', 'unix_username',
+                  'vcs_type', 'vcs_url']
 
     def copy_code(self, source, target):
-        """ Copy code from one environment to another.
+        """Copy code from one environment to another.
 
         Parameters
         ----------
@@ -39,7 +40,7 @@ class Site(AcquiaResource):
         return True
 
     def environment(self, name):
-        """ Retrieve an environment resource.
+        """Retrieve an environment resource.
 
         Parameters
         ----------
@@ -55,7 +56,7 @@ class Site(AcquiaResource):
         return Environment(uri, self.auth)
 
     def environments(self):
-        """ Retrieve a list of environments.
+        """Retrieve a list of environments.
 
         Returns
         -------
@@ -66,7 +67,7 @@ class Site(AcquiaResource):
         return envs
 
     def task(self, task_id):
-        """ Retrieve a task.
+        """Retrieve a task.
 
         Parameters
         ----------
@@ -82,7 +83,7 @@ class Site(AcquiaResource):
         return Task(uri, self.auth, hack_uri=False)
 
     def tasks(self):
-        """ Retrieve all tasks for the site.
+        """Retrieve all tasks for the site.
 
         Returns
         -------

@@ -7,14 +7,14 @@ except ImportError:
     # Python 2.x
     import urlparse
 
-from .acquiaresource import AcquiaResource
+from acapi.resources.acquiaresource import AcquiaResource
+
 
 class Backup(AcquiaResource):
-
     """Acquia Cloud database backup."""
 
-    valid_keys = ['completed', 'created', 'description', 'id', 'percentage', 'queue',
-                  'recipient', 'result', 'sender', 'started', 'state']
+    valid_keys = ['completed', 'created', 'description', 'id', 'percentage',
+                  'queue', 'recipient', 'result', 'sender', 'started', 'state']
 
     def delete(self):
         """Delete the current backup resource.

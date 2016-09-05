@@ -1,8 +1,13 @@
-""" Tests the sites class. """
+"""Tests the sites class."""
+
 import requests_mock
 
-from . import BaseTest
-from ..resources import Environment, EnvironmentList, Task, TaskList
+from acapi.resources.environment import Environment
+from acapi.resources.environmentlist import EnvironmentList
+from acapi.resources.task import Task
+from acapi.resources.tasklist import TaskList
+from acapi.tests import BaseTest
+
 
 @requests_mock.Mocker()
 class TestSite(BaseTest):
@@ -15,15 +20,18 @@ class TestSite(BaseTest):
         self.site = self.client.site('mysite')
 
     def test_copy_code(self, mocker):
-        """ Tests copying code from one environment to another. """
+        """Tests copying code from one environment to another. """
 
         source = 'dev'
         target = 'staging'
+        url = 'https://cloudapi.acquia.com/v1/' \
+              'sites/prod:mysite/code-deploy/' \
+              '{source}/{target}.json'.format(source=source, target=target)
 
         # Register the copy action.
         mocker.register_uri(
             'POST',
-            'https://cloudapi.acquia.com/v1/sites/prod:mysite/code-deploy/{source}/{target}.json'.format(source=source, target=target),
+            url,
             json=self.generate_task_dictionary(1137, 'waiting', False),
         )
 
@@ -37,11 +45,12 @@ class TestSite(BaseTest):
         self.site.copy_code(source, target)
 
     def test_environment(self, mocker):
-        """ Tests environment() method. """
+        """Tests environment() method."""
 
         name = 'dev'
 
-        url = 'https://cloudapi.acquia.com/v1/sites/prod:mysite/envs/{}.json'.format(name)
+        url = 'https://cloudapi.acquia.com/v1/' \
+              'sites/prod:mysite/envs/{}.json'.format(name)
         json = {
             "name": name,
             "vcs_path": "master",
@@ -58,10 +67,10 @@ class TestSite(BaseTest):
 
         env = self.site.environment('dev')
         self.assertIsInstance(env, Environment)
-        self.assertEquals(env['name'], name)
+        self.assertEqual(env['name'], name)
 
     def test_environments(self, mocker):
-        """ Tests environments() method. """
+        """Tests environments() method."""
 
         url = 'https://cloudapi.acquia.com/v1/sites/prod:mysite/envs.json'
         json = [
@@ -90,20 +99,24 @@ class TestSite(BaseTest):
 
         env = self.site.environments()
         self.assertIsInstance(env, EnvironmentList)
-        #TODO move this to test_environments
-        self.assertEquals(env.first()['livedev'], 'disabled')
-        self.assertEquals(env.last()['default_domain'], 'mysite.msmith.ahclouddev.com')
-        self.assertEquals(env['prod']['name'], 'prod')
+        # TODO(skwashd) move this to test_environments
+        self.assertEqual(env.first()['livedev'], 'disabled')
+        self.assertEqual(env.last()['default_domain'],
+                         'mysite.msmith.ahclouddev.com')
+        self.assertEqual(env['prod']['name'], 'prod')
 
     def test_task(self, mocker):
-        """ Tests single site task request. """
-        url = 'https://cloudapi.acquia.com/v1/sites/prod:mysite/tasks/289466.json'
+        """Tests single site task request."""
+        url = 'https://cloudapi.acquia.com/v1/' \
+              'sites/prod:mysite/tasks/289466.json'
+
         json = {
             "completed": None,
             "created": "1331259657",
             "description": "Copy files from dev to prod",
             "id": "1213",
-            "logs": "[02:20:58] [02:20:58] Started\n[02:21:00] [02:21:00] Failure\n",
+            "logs": "[02:20:58] [02:20:58] Started\n"
+                    "[02:21:00] [02:21:00] Failure\n",
             "queue": "files-migrate",
             "result": "",
             "sender": "cloud_api",
@@ -121,15 +134,16 @@ class TestSite(BaseTest):
         self.assertIsInstance(task, Task)
 
     def test_tasks(self, mocker):
-        """ Tests site task list request. """
+        """Tests site task list request."""
         url = 'https://cloudapi.acquia.com/v1/sites/prod:mysite/tasks.json'
-        json =  [
+        json = [
             {
                 "completed": "1331254866",
                 "created": "1331254863",
                 "description": "Backup database mysite in dev environment.",
                 "id": "988",
-                "logs": "[01:01:04] [01:01:04] Started\n[01:01:06] [01:01:06] Done\n",
+                "logs": "[01:01:04] [01:01:04] Started\n"
+                        "[01:01:06] [01:01:06] Done\n",
                 "queue": "create-db-backup-ondemand",
                 "result": "{\"backupid\":\"37\"}",
                 "sender": "cloud_api",
@@ -146,4 +160,4 @@ class TestSite(BaseTest):
 
         tasks = self.site.tasks()
         self.assertIsInstance(tasks, TaskList)
-        self.assertEquals(len(tasks), 1)
+        self.assertEqual(len(tasks), 1)

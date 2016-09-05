@@ -1,20 +1,21 @@
 """ Acquia Cloud API database list resource. """
 
 import re
-from .acquialist import AcquiaList
-from .database import Database
+
+from acapi.resources.acquialist import AcquiaList
+from acapi.resources.database import Database
+
 
 class DatabaseList(AcquiaList):
-
     """Dictionary of Acquia Cloud API database resources keyed by name."""
 
     def __init__(self, base_uri, auth, *args, **kwargs):
-        """ Constructor. """
+        """Constructor."""
         super(DatabaseList, self).__init__(base_uri, auth, *args, **kwargs)
         self.fetch()
 
     def create(self, name):
-        """ Create a new database.
+        """Create a new database.
 
         Parameters
         ----------
@@ -41,7 +42,7 @@ class DatabaseList(AcquiaList):
         return db_obj
 
     def fetch(self):
-        """ Fetch and store database objects. """
+        """Fetch and store database objects. """
         dbs = super(DatabaseList, self).request(uri=self.uri)
         for db_obj in dbs:
             name = str(db_obj['name'])
@@ -49,7 +50,7 @@ class DatabaseList(AcquiaList):
             self.__setitem__(name, Database(db_uri, self.auth, data=db_obj))
 
     def get_resource_uri(self, name):
-        """ Generate the database URI.
+        """Generate the database URI.
 
         Parameters
         ----------
@@ -64,7 +65,7 @@ class DatabaseList(AcquiaList):
         return '{base_uri}/{name}'.format(base_uri=self.uri, name=name)
 
     def set_base_uri(self, base_uri):
-        """ Set the base URI for database resources.
+        """Set the base URI for database resources.
 
         Parameters
         ----------

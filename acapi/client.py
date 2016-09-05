@@ -3,11 +3,13 @@
 import os
 import requests_cache
 
-from .resources import Site, SiteList, User
-from .exceptions import AcquiaCloudException
+import acapi.exceptions
+from acapi.resources.site import Site
+from acapi.resources.sitelist import SiteList
+from acapi.resources.user import User
+
 
 class Client(object):
-
     """A Client for accessing the Acquia Cloud API."""
 
     def __init__(
@@ -33,14 +35,17 @@ class Client(object):
         if not user or not token:
             user, token = self.__find_credentials()
             if not user or not token:
-                raise AcquiaCloudException("Credentials not provided")
+                msg = "Credentials not provided"
+                raise acapi.exceptions.AcquiaCloudException(msg)
 
         self.auth = (user, token)
         self.realm = realm
         self.endpoint = endpoint
 
         if cache is not None:
-            requests_cache.install_cache(cache_name='acapi', backend='memory', expire_after=cache)
+            requests_cache.install_cache(cache_name='acapi',
+                                         backend='memory',
+                                         expire_after=cache)
 
     def generate_uri(self, path):
         """Generate a URI for a ACAPI request.

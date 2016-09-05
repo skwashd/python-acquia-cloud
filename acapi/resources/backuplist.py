@@ -1,21 +1,21 @@
-""" List of database backups. """
+"""List of database backups."""
 
 import json
 
-from .acquialist import AcquiaList
-from .backup import Backup
+from acapi.resources.acquialist import AcquiaList
+from acapi.resources.backup import Backup
+
 
 class BackupList(AcquiaList):
-
     """List of database backups for a site."""
 
     def __init__(self, base_uri, auth, *args, **kwargs):
-        """ Constructor. """
+        """Constructor."""
         super(BackupList, self).__init__(base_uri, auth, *args, **kwargs)
         self.fetch()
 
     def create(self):
-        """ Create a new backup."""
+        """Create a new backup."""
         task_data = self.request(method='POST')
 
         task = self.create_task(self.uri, task_data)
@@ -32,7 +32,7 @@ class BackupList(AcquiaList):
         return backup
 
     def fetch(self):
-        """ Fetch and store database object. """
+        """Fetch and store database object."""
         backups = super(BackupList, self).request(uri=self.uri)
         for backup in backups:
             backup_id = int(backup['id'])
@@ -40,7 +40,7 @@ class BackupList(AcquiaList):
             self.__setitem__(backup_id, Backup(uri, self.auth, data=backup))
 
     def set_base_uri(self, base_uri):
-        """ Set the base URI for backup resources.
+        """Set the base URI for backup resources.
 
         Parameters
         ----------

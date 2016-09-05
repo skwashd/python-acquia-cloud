@@ -1,14 +1,14 @@
-""" Dictionary of Acquia Cloud API resources. """
+"""Dictionary of Acquia Cloud API resources."""
 
-from .acquiadata import AcquiaData
-from ..exceptions import AcquiaCloudNoDataException
+from acapi.exceptions import AcquiaCloudNoDataException
+from acapi.resources.acquiadata import AcquiaData
+
 
 class AcquiaList(AcquiaData, dict):
-
-    """ Dictionary of Acquia Cloud API resources. """
+    """Dictionary of Acquia Cloud API resources."""
 
     def __init__(self, base_uri, auth, *args, **kwargs):
-        """ See :func:AcquiaData.__init__. """
+        """See :func:AcquiaData.__init__."""
         self.sorted_keys = []
 
         # Setup the dict
@@ -19,17 +19,17 @@ class AcquiaList(AcquiaData, dict):
         AcquiaData.__init__(self, self.uri, auth)
 
     def __delitem__(self, key):
-        """ See dict.__del_item__(). """
+        """See dict.__del_item__()."""
         super(AcquiaList, self).__delitem__(key)
         self.sorted_keys = []
 
     def __setitem__(self, key, value):
-        """ See dict.__set_item__(). """
+        """See dict.__set_item__()."""
         super(AcquiaList, self).__setitem__(key, value)
         self.sorted_keys = []
 
     def get_resource_uri(self, res):
-        """ Generate the resource URI.
+        """Generate the resource URI.
 
         Parameters
         ----------
@@ -44,7 +44,7 @@ class AcquiaList(AcquiaData, dict):
         return '{base_uri}/{res}'.format(base_uri=self.uri, res=res)
 
     def first(self):
-        """ Retrieve the first item in the dictionary.
+        """Retrieve the first item in the dictionary.
 
         Returns
         -------
@@ -58,7 +58,7 @@ class AcquiaList(AcquiaData, dict):
         return self[key]
 
     def get_sorted_keys(self):
-        """ Get a sorted copy of the dictionary keys. """
+        """Get a sorted copy of the dictionary keys."""
         if not self.sorted_keys:
             keys = list(self.keys())
             self.sorted_keys = sorted(keys)
@@ -66,7 +66,7 @@ class AcquiaList(AcquiaData, dict):
         return self.sorted_keys
 
     def last(self):
-        """ Retrieve the last item in the dictionary.
+        """Retrieve the last item in the dictionary.
 
         Returns
         -------
@@ -80,7 +80,7 @@ class AcquiaList(AcquiaData, dict):
         return self[key]
 
     def search_pos(self, pos):
-        """ Search for a particular key.
+        """Search for a particular key.
 
         Parameters
         ----------
@@ -96,7 +96,7 @@ class AcquiaList(AcquiaData, dict):
         return keys[pos]
 
     def set_base_uri(self, base_uri):
-        """ Set the base URI for the resource.
+        """Set the base URI for the resource.
 
         Parameters
         ----------

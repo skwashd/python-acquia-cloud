@@ -1,28 +1,28 @@
-""" Acquia Cloud API Exceptions. """
+"""Acquia Cloud API Exceptions."""
 
 from pprint import pformat
 
-class AcquiaCloudException(Exception):
 
-    """  Generic Acquia Cloud API Exception.
+class AcquiaCloudException(Exception):
+    """Generic Acquia Cloud API Exception.
 
     All ACAPI exceptions should extend this class.
     """
 
     pass
 
-class AcquiaCloudNoDataException(AcquiaCloudException):
 
-    """ No data found exception. """
+class AcquiaCloudNoDataException(AcquiaCloudException):
+    """No data found exception."""
 
     pass
 
-class AcquiaCloudTaskFailedException(AcquiaCloudException):
 
+class AcquiaCloudTaskFailedException(AcquiaCloudException):
     """An Acquia task failure exception."""
 
     def __init__(self, message, task):
-        """ Constructor.
+        """Constructor.
 
         Parameters
         ----------
@@ -36,11 +36,12 @@ class AcquiaCloudTaskFailedException(AcquiaCloudException):
         self.task = task
 
     def __str__(self):
-        """ Return the string representation of the exception.
+        """Return the string representation of the exception.
 
         Returns
         -------
         str
             The error message and pretty printed Task object properties.
         """
-        return "{msg}\n{task}".format(msg=self.message, task=pformat(self.task, indent=4))
+        task = pformat(self.task, indent=4)
+        return "{msg}\n{task}".format(msg=self.message, task=task)
