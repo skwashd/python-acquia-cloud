@@ -1,10 +1,12 @@
 """Acquia API task queue resource."""
 
-from datetime import datetime
 import logging
 import re
 import requests_cache
 import time
+
+from datetime import datetime
+from datetime import timedelta
 
 from acapi.exceptions import AcquiaCloudTaskFailedException
 from acapi.resources.acquiaresource import AcquiaResource
@@ -79,25 +81,32 @@ class Task(AcquiaResource):
             task = self.request()
 
         self.data = task
-        return None == task['completed']
+        return task['completed'] is None
 
-    def wait(self):
+    def wait(self, timeout=1800):
         """Wait for a task to finish executing.
+
+        Parameters
+        ----------
+        timeout : int
+            The maximum number of seconds to wait for the task to complete.
+
 
         Returns
         -------
         Task
             Task object.
         """
-        # We wait a maximum of 30mins
-        max_loops = (60 * 30 / self.POLL_INTERVAL)
         start = datetime.now()
+        max_time = start + timedelta(seconds=timeout)
 
         while self.pending():
-            if self.loops >= max_loops:
-                break
+            # Ensure the timeout hasn't been exceeded.
+            if start >= max_time:
+                msg = 'Time out exceeded while waiting for {tid}' \
+                      .format(tid=self.data['id'])
+                raise AcquiaCloudTaskFailedException(msg, self.data)
 
-            self.loops += 1
             time.sleep(self.POLL_INTERVAL)
 
         # Grab the cached response

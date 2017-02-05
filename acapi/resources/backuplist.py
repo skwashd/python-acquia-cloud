@@ -14,12 +14,12 @@ class BackupList(AcquiaList):
         super(BackupList, self).__init__(base_uri, auth, *args, **kwargs)
         self.fetch()
 
-    def create(self):
+    def create(self, timeout=3600):
         """Create a new backup."""
         task_data = self.request(method='POST')
 
         task = self.create_task(self.uri, task_data)
-        task.wait()
+        task.wait(timeout)
 
         # For some reason Acquia encodes JSON as a string in a JSON object.
         result = json.loads(task['result'])
