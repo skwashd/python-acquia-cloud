@@ -2,12 +2,17 @@
 
 """Setup ACAPI package."""
 
+import os
 from setuptools import setup
+
+with open(os.path.join(os.path.dirname(__name__), 'README.rst')) as f:
+    long_description = f.read()
 
 setup(
     name='acapi',
     version='0.4.3',
     description='Acquia Cloud API client.',
+    long_description=long_description,
     author='Dave Hall',
     author_email='me@davehall.com.au',
     url='http://github.com/skwashd/python-acquia-cloud',
