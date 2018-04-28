@@ -14,7 +14,7 @@ class SiteList(AcquiaList):
 
     def fetch(self):
         """Fetch and store site objects."""
-        sites = super(SiteList, self).request(uri=self.uri)
+        sites = self.request(uri=self.uri)
         for site in sites:
             realm, name = str(site).split(':')
             site_uri = self.get_resource_uri(name, realm=realm)

@@ -14,7 +14,7 @@ class TaskList(AcquiaList):
 
     def fetch(self):
         """Fetch and store task objects. """
-        tasks = super(TaskList, self).request(uri=self.uri)
+        tasks = self.request(uri=self.uri)
         for task in tasks:
             task_id = int(task['id'])
             task_uri = self.get_resource_uri(task_id)

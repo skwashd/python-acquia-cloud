@@ -14,7 +14,7 @@ class EnvironmentList(AcquiaList):
 
     def fetch(self):
         """Fetch and store environment objects."""
-        envs = super(EnvironmentList, self).request(uri=self.uri)
+        envs = self.request(uri=self.uri)
         for env in envs:
             name = str(env['name'])
             env_uri = self.get_resource_uri(name)

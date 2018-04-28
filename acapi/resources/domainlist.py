@@ -33,7 +33,7 @@ class DomainList(AcquiaList):
 
     def fetch(self):
         """Fetch and store domain objects."""
-        domains = super(DomainList, self).request(uri=self.uri)
+        domains = self.request(uri=self.uri)
         for domain in domains:
             name = str(domain['name'])
             domain_uri = self.get_resource_uri(name)

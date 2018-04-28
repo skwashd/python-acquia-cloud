@@ -43,7 +43,7 @@ class DatabaseList(AcquiaList):
 
     def fetch(self):
         """Fetch and store database objects. """
-        dbs = super(DatabaseList, self).request(uri=self.uri)
+        dbs = self.request(uri=self.uri)
         for db_obj in dbs:
             name = str(db_obj['name'])
             db_uri = self.get_resource_uri(name)

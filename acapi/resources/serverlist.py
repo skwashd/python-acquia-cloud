@@ -14,7 +14,7 @@ class ServerList(AcquiaList):
 
     def fetch(self):
         """Fetch and store server objects. """
-        servers = super(ServerList, self).request(uri=self.uri)
+        servers = self.request(uri=self.uri)
         for server in servers:
             name = str(server['name'])
             server_uri = self.get_resource_uri(name)
