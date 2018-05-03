@@ -5,7 +5,7 @@
 import os
 from setuptools import setup
 
-with open(os.path.join(os.path.dirname(__name__), 'README.rst')) as f:
+with open(os.path.join(os.path.dirname(__name__), 'README.md')) as f:
     long_description = f.read()
 
 setup(
