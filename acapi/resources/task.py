@@ -102,7 +102,7 @@ class Task(AcquiaResource):
 
         while self.pending():
             # Ensure the timeout hasn't been exceeded.
-            if start >= max_time:
+            if datetime.now() >= max_time:
                 msg = 'Time out exceeded while waiting for {tid}' \
                       .format(tid=self.data['id'])
                 raise AcquiaCloudTaskFailedException(msg, self.data)
