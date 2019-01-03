@@ -4,8 +4,10 @@ python:
   - "3.4"
   - "3.5"
   - "3.6"
+  - "3.7"
 
-sudo: false
+dist: xenial
+sudo: required
 
 install:
   - pip install -r requirements-dev.txt
