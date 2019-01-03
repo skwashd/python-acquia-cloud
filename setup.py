@@ -10,13 +10,13 @@ with open(os.path.join(os.path.dirname(__name__), 'README.md')) as f:
 
 setup(
     name='acapi',
-    version='0.4.6',
+    version='0.5.0',
     description='Acquia Cloud API client.',
     long_description=long_description,
     author='Dave Hall',
     author_email='me@davehall.com.au',
     url='http://github.com/skwashd/python-acquia-cloud',
-    install_requires=['requests==2.18.4', 'requests-cache==0.4.13'],
+    install_requires=['requests==2.21.0', 'requests-cache==0.4.13'],
     license='MIT',
     classifiers=[
         'Development Status :: 3 - Alpha',
