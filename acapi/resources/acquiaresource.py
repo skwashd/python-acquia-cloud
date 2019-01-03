@@ -14,7 +14,7 @@ class AcquiaResource(AcquiaData):
         if self.data is None:
             self.get()
 
-        if self.valid_keys is None and key in self.valid_keys:
+        if self.valid_keys is not None and key in self.valid_keys:
             return self.data[key]
 
     def get(self):
