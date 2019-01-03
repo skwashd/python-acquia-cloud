@@ -87,7 +87,7 @@ class AcquiaData(object):
 
         self.last_response = None
 
-        if None == uri:
+        if uri is None:
             uri = self.uri
 
         headers = {'User-Agent': self.USER_AGENT}

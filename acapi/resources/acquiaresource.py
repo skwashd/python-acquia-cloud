@@ -11,15 +11,15 @@ class AcquiaResource(AcquiaData):
 
     def __getitem__(self, key):
         """Get the value of an object property."""
-        if None == self.data:
+        if self.data is None:
             self.get()
 
-        if None != self.valid_keys and key in self.valid_keys:
+        if self.valid_keys is None and key in self.valid_keys:
             return self.data[key]
 
     def get(self):
         """Return the resource from the Acquia Cloud API."""
-        if None == self.data:
+        if self.data is None:
             response = self.request()
             self.data = response
 
