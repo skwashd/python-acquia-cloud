@@ -19,7 +19,7 @@ class BaseTest(unittest.TestCase):
     def generate_task_dictionary(self, tid, state='done', completed=True):
         """Generates a task dictionary."""
 
-        known_states = ['done', 'error', 'received', 'waiting']
+        known_states = ['done', 'error', 'started', 'received', 'waiting']
 
         now = int(time.time())
 

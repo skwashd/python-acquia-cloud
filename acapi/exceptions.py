@@ -45,3 +45,9 @@ class AcquiaCloudTaskFailedException(AcquiaCloudException):
         """
         task = pformat(self.task, indent=4)
         return "{msg}\n{task}".format(msg=self.message, task=task)
+
+
+class AcquiaCloudTimeoutError(AcquiaCloudTaskFailedException):
+    """Timeout exceeded error."""
+
+    pass

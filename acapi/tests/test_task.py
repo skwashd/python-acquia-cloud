@@ -1,9 +1,16 @@
 """Tests the Acquia Cloud API Task class."""
-
 import requests_mock
+import sys
 
-from acapi.exceptions import AcquiaCloudTaskFailedException
+from datetime import timedelta
+
+from acapi import exceptions
 from acapi.tests import BaseTest
+
+if sys.version_info[0] < 3:
+    import mock
+else:
+    from unittest import mock
 
 
 @requests_mock.Mocker()
@@ -55,8 +62,34 @@ class TestTask(BaseTest):
             responses
         )
 
-        with self.assertRaises(AcquiaCloudTaskFailedException):
+        with self.assertRaises(exceptions.AcquiaCloudTaskFailedException):
             self.client.site(site).task(tid).wait()
+
+    @mock.patch("acapi.resources.task.timedelta", return_value=timedelta(-1))
+    def test_timeout(self, mocker, mock_timedelta):
+        """Tests task timeout exceeded."""
+
+        tid = 289466
+        site = 'mysite'
+
+        exception_response = self.generate_task_dictionary(tid,
+                                                           state='started',
+                                                           completed=None)
+
+        responses = [
+            {'json': exception_response},
+        ]
+        url = 'https://cloudapi.acquia.com/v1/' \
+              'sites/prod:{site}/tasks/{tid}.json'.format(tid=tid, site=site)
+
+        mocker.register_uri(
+            'GET',
+            url,
+            responses
+        )
+
+        with self.assertRaises(exceptions.AcquiaCloudTimeoutError):
+            self.client.site(site).task(tid).wait(0)
 
     def test_wait(self, mocker):
         """Tests waiting for a task to complete."""
