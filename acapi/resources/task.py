@@ -8,7 +8,7 @@ import time
 from datetime import datetime
 from datetime import timedelta
 
-from acapi.exceptions import AcquiaCloudTaskFailedException
+from acapi import exceptions
 from acapi.resources.acquiaresource import AcquiaResource
 
 LOGGER = logging.getLogger('acapi.resources.task')
@@ -105,16 +105,15 @@ class Task(AcquiaResource):
             if datetime.now() >= max_time:
                 msg = 'Time out exceeded while waiting for {tid}' \
                       .format(tid=self.data['id'])
-                raise AcquiaCloudTaskFailedException(msg, self.data)
+                raise exceptions.AcquiaCloudTimeoutError(msg, self.data)
 
             time.sleep(self.POLL_INTERVAL)
 
         # Grab the cached response
         task = self.get()
         if 'done' != task['state']:
-            raise AcquiaCloudTaskFailedException('Task {task_id} failed'
-                                                 .format(task_id=task['id']),
-                                                 task)
+            raise exceptions.AcquiaCloudTaskFailedException(
+                'Task {task_id} failed'.format(task_id=task['id']), task)
 
         end = datetime.now()
         delta = end - start
