@@ -10,7 +10,7 @@ with open(os.path.join(os.path.dirname(__name__), 'README.md')) as f:
 
 setup(
     name='acapi',
-    version='0.5.0',
+    version='0.6.0',
     description='Acquia Cloud API client.',
     long_description=long_description,
     author='Dave Hall',
