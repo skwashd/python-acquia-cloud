@@ -12,7 +12,7 @@ sudo: required
 install:
   - pip install -r requirements-dev.txt
 script:
-  - nosetests --with-coverage --cover-package=acapi
+  - nosetests --with-coverage --cover-package=acapi -vv
   - flake8
 after_success:
   - coveralls

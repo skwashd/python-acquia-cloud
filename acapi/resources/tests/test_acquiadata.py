@@ -53,7 +53,7 @@ class TestAcquiaData(unittest.TestCase):
     def test_get_404(self, m):
         """Tests a GET request that receives a 404 response."""
 
-        uri = self.base_uri + 'invalid'
+        uri = "{base_uri}{path}".format(base_uri=self.base_uri, path='invalid')
 
         m.register_uri('GET', uri + '.json', status_code=400)
 
@@ -65,17 +65,37 @@ class TestAcquiaData(unittest.TestCase):
 
     def test_get_500s_retry(self, m):
         """Tests retrying a GET request that receives 50x response."""
-        uri = self.base_uri + 'test'
+        uri = "{base_uri}{path}".format(base_uri=self.base_uri, path='test')
 
-        m.register_uri('GET', uri + '.json', status_code=503)
-        m.register_uri('GET', uri + '.json?acapi_retry=1', status_code=504)
-        m.register_uri('GET', uri + '.json?acapi_retry=2', json={})
+        m.register_uri(
+            'GET',
+            "{uri}{ext}".format(uri=uri, ext=".json"),
+            status_code=503
+        )
+        m.register_uri(
+            'GET',
+            "{uri}{ext}".format(uri=uri, ext=".json?acapi_retry=1"),
+            status_code=504
+        )
+        m.register_uri(
+            'GET',
+            "{uri}{ext}".format(uri=uri, ext=".json?acapi_retry=2"),
+            json={}
+        )
 
         data = {}
         adata = AcquiaData(uri, None, data)
 
         response = adata.request()
         self.assertIsInstance(response, dict)
+
+    def test_get_response_content(self, m):
+        uri = "{domain}{ext}".format(domain=self.domain_uri, ext=".json")
+        m.register_uri('GET', uri, status_code=200)
+
+        adata = AcquiaData(self.domain_uri, None, {})
+        response = adata.request(decode_json=False)
+        self.assertIsInstance(response, bytes)
 
 
 if __name__ == '__main__':

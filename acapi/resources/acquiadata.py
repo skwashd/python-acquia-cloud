@@ -62,8 +62,8 @@ class AcquiaData(object):
         """Fetch the last response object. """
         return self.last_response
 
-    def request(self, uri=None, method='GET',
-                data=None, params={}, decode_json=True):
+    def request(self, uri=None, method='GET', data=None, params={},
+                decode_json=True, headers={}, stream=False):
         """Perform a HTTP requests.
 
         Parameters
@@ -72,12 +72,16 @@ class AcquiaData(object):
             The URI to use for the request.
         method : str
             The HTTP method to use for the request.
-        auth : tuple
-            The authentication credentials to use for the request.
         data : dict
             Any data to send as part of a post request body.
         params : dict
             Query string parameters.
+        decode_json : bool
+            Decode response or not.
+        headers : dict
+            The HTTP request headers.
+        stream: bool
+            If response is streamed.
 
         Returns
         -------
@@ -90,7 +94,7 @@ class AcquiaData(object):
         if uri is None:
             uri = self.uri
 
-        headers = {'User-Agent': self.USER_AGENT}
+        headers['User-Agent'] = self.USER_AGENT
 
         uri = '{}.json'.format(uri)
 
@@ -98,8 +102,11 @@ class AcquiaData(object):
         if 'GET' == method:
             attempt = 0
             while attempt <= 5:
-                resp = requests.get(uri, auth=self.auth,
-                                    headers=headers, params=params)
+                resp = requests.get(uri,
+                                    auth=self.auth,
+                                    headers=headers,
+                                    params=params,
+                                    stream=stream)
 
                 if resp.status_code not in list(range(500, 505)):
                     # No need to retry for if not a server error type.
@@ -133,13 +140,15 @@ class AcquiaData(object):
 
         self.last_response = resp
 
-        if resp.status_code != requests.codes.ok:
-            try:
-                raise resp.raise_for_status()
-            except requests.exceptions.HTTPError as exp:
-                LOGGER.info("Failed request response headers: \n%s",
-                            pformat(exp.response.headers, indent=2))
-                raise
+        try:
+            resp.raise_for_status()
+        except requests.exceptions.HTTPError as exp:
+            LOGGER.info("Failed request response headers: \n%s",
+                        pformat(exp.response.headers, indent=2))
+            raise
+
+        if stream:
+            return resp
 
         if decode_json:
             return resp.json()
