@@ -51,10 +51,23 @@ class Backup(AcquiaResource):
         url_parts._replace(query='')
         uri = url_parts.geturl()
 
-        content = self.request(uri=uri, params=query, decode_json=False)
+        bytes_total = bytes_read = 0  # needed for track if all content is read
+        with open(target_file, 'ab') as backup_file:
+            while True:
+                headers = {"Range": "bytes={}-".format(bytes_read)}
+                response = self.request(uri, headers=headers,
+                                        params=query, decode_json=False,
+                                        stream=True)
 
-        backup_file = open(target_file, 'wb')
-        backup_file.write(content)
-        backup_file.close()
+                if not bytes_total:
+                    bytes_total = int(response.headers["Content-Length"])
+
+                for chunk in response.iter_content(chunk_size=1024 * 36):
+                    backup_file.write(chunk)
+
+                bytes_read += response.raw.tell()
+
+                if bytes_total == bytes_read:
+                    break
 
         return True

@@ -1,8 +1,8 @@
 [flake8]
 ignore =
-	# This isn't an OpenStack project so we don't use their headers. 
+	# This isn't an OpenStack project so we don't use their headers.
 	H102,
-	H103
+	H103,
 
 exclude = .git,__pycache__
 # This needs to be dropped to <=10 once AcquiaData.request is refactored.
