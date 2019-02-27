@@ -36,18 +36,20 @@ class Database(AcquiaResource):
         backups = BackupList(self.uri, self.auth)
         return backups
 
-    def copy(self, target):
+    def copy(self, target, wait=True):
         """Copy a database to another environment.
 
         Parameters
         ----------
         target : string
             Name of the target environment.
+        wait : bool
+            Wait until task is complete.
 
         Returns
         -------
-        Database
-            Target database object.
+        Database or Task
+            Target database or Task object.
         """
         # More regex hacks to work around the limitations of the ACAPI.
         pattern = re.compile('/envs/(.*)/dbs/(.*)')
@@ -59,6 +61,8 @@ class Database(AcquiaResource):
 
         task_data = self.request(uri=copy_uri, method='POST')
         task = self.create_task(copy_uri, task_data)
+        if not wait:
+            return task
         task.wait()
 
         # Another hack, this time to get the URI for the domain.
