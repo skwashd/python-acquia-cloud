@@ -4,6 +4,7 @@ import requests_mock
 
 from acapi.resources.backuplist import BackupList
 from acapi.resources.database import Database
+from acapi.resources import Task
 from acapi.tests import BaseTest
 
 
@@ -62,3 +63,25 @@ class TestDatabase(BaseTest):
         db = self.client.site('mysite').environment('dev').db('mysite').copy(
             'staging')
         self.assertIsInstance(db, Database)
+
+    def test_copy_wait_false(self, mocker):
+        """Test database copy call with wait=False."""
+
+        url = 'https://cloudapi.acquia.com/v1/' \
+              'sites/prod:mysite/dbs/mysite/db-copy/dev/staging.json'
+
+        mocker.register_uri(
+            'POST',
+            url,
+            json=self.generate_task_dictionary(1210, 'waiting', False),
+        )
+
+        mocker.register_uri(
+            'GET',
+            'https://cloudapi.acquia.com/v1/sites/prod:mysite/tasks/1210.json',
+            json=self.generate_task_dictionary(1210, 'done', True),
+        )
+
+        task = self.client.site('mysite').environment('dev').db('mysite').copy(
+            'staging', wait=False)
+        self.assertIsInstance(task, Task)
