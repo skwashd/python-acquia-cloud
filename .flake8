@@ -1,9 +1,7 @@
 [flake8]
-ignore =
-	# This isn't an OpenStack project so we don't use their headers.
-	H102,
-	H103,
-
-exclude = .git,__pycache__
+exclude = __pycache__,.venv,build,dist
+ignore = E501,W503
+max-line-length = 80
+select = C,E,F,W,B,B901,B902,B903,B950
 # This needs to be dropped to <=10 once AcquiaData.request is refactored.
-max_complexity = 16
+max_complexity = 15
