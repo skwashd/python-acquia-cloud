@@ -16,7 +16,7 @@ class ServerList(AcquiaList):
         """Fetch and store server objects. """
         servers = self.request(uri=self.uri)
         for server in servers:
-            name = str(server['name'])
+            name = str(server["name"])
             server_uri = self.get_resource_uri(name)
             self.__setitem__(name, Server(server_uri, self.auth, data=server))
 
@@ -33,7 +33,7 @@ class ServerList(AcquiaList):
         str
             The server URI.
         """
-        return '{base_uri}/{name}'.format(base_uri=self.uri, name=name)
+        return "{base_uri}/{name}".format(base_uri=self.uri, name=name)
 
     def set_base_uri(self, base_uri):
         """Set the base URI for server resources.
@@ -43,5 +43,5 @@ class ServerList(AcquiaList):
         base_uri : str
             The base URI to use for generating the new URI.
         """
-        uri = '{}/servers'.format(base_uri)
+        uri = "{}/servers".format(base_uri)
         self.uri = uri

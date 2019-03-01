@@ -13,9 +13,13 @@ class Client(object):
     """A Client for accessing the Acquia Cloud API."""
 
     def __init__(
-            self, user=None, token=None, realm='prod',
-            endpoint='https://cloudapi.acquia.com/v1',
-            cache=600):
+        self,
+        user=None,
+        token=None,
+        realm="prod",
+        endpoint="https://cloudapi.acquia.com/v1",
+        cache=600,
+    ):
         """Create an Acquia Cloud API REST client.
 
         Parameters
@@ -43,9 +47,9 @@ class Client(object):
         self.endpoint = endpoint
 
         if cache is not None:
-            requests_cache.install_cache(cache_name='acapi',
-                                         backend='memory',
-                                         expire_after=cache)
+            requests_cache.install_cache(
+                cache_name="acapi", backend="memory", expire_after=cache
+            )
 
     def generate_uri(self, path):
         """Generate a URI for a ACAPI request.
@@ -61,7 +65,7 @@ class Client(object):
             The generates URI.
 
         """
-        uri = '{endpoint}/{path}'.format(endpoint=self.endpoint, path=path)
+        uri = "{endpoint}/{path}".format(endpoint=self.endpoint, path=path)
         return uri
 
     def site(self, name):
@@ -78,7 +82,7 @@ class Client(object):
             The site object.
 
         """
-        namespace = ('sites/%s:%s' % (self.realm, name))
+        namespace = "sites/%s:%s" % (self.realm, name)
         uri = self.generate_uri(namespace)
         site = Site(uri, self.auth)
         return site
@@ -97,11 +101,11 @@ class Client(object):
 
     def user(self):
         """Retrieve the currently authenticated Cloud API user."""
-        user = User(self.generate_uri('me'), self.auth)
+        user = User(self.generate_uri("me"), self.auth)
         return user
 
     def __find_credentials(self):
         """Check environment variables for API credentials."""
-        user = os.environ.get('ACQUIA_CLOUD_API_USER')
-        token = os.environ.get('ACQUIA_CLOUD_API_TOKEN')
+        user = os.environ.get("ACQUIA_CLOUD_API_USER")
+        token = os.environ.get("ACQUIA_CLOUD_API_TOKEN")
         return user, token

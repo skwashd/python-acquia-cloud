@@ -10,16 +10,15 @@ from acapi.version import __version__
 from platform import python_version
 from pprint import pformat
 
-LOGGER = logging.getLogger('acapi.resources.acquiadata')
+LOGGER = logging.getLogger("acapi.resources.acquiadata")
 
 
 class AcquiaData(object):
     """Acquia Cloud API abstract network resource."""
 
     #: User Agent string
-    RAW_AGENT = 'Acquia Cloud API Client/{mver} (Python {pver})'
-    USER_AGENT = RAW_AGENT.format(mver=__version__,
-                                  pver=python_version())
+    RAW_AGENT = "Acquia Cloud API Client/{mver} (Python {pver})"
+    USER_AGENT = RAW_AGENT.format(mver=__version__, pver=python_version())
 
     def __init__(self, uri, auth, data=None):
         """Constructor.
@@ -55,6 +54,7 @@ class AcquiaData(object):
         """
         # We have to do this here to avoid circular dependencies
         from acapi.resources.task import Task
+
         task = Task(uri, self.auth, data=data)
         return task
 
@@ -62,8 +62,16 @@ class AcquiaData(object):
         """Fetch the last response object. """
         return self.last_response
 
-    def request(self, uri=None, method='GET', data=None, params={},
-                decode_json=True, headers={}, stream=False):
+    def request(
+        self,
+        uri=None,
+        method="GET",
+        data=None,
+        params={},
+        decode_json=True,
+        headers={},
+        stream=False,
+    ):
         """Perform a HTTP requests.
 
         Parameters
@@ -94,48 +102,46 @@ class AcquiaData(object):
         if uri is None:
             uri = self.uri
 
-        headers['User-Agent'] = self.USER_AGENT
+        headers["User-Agent"] = self.USER_AGENT
 
-        uri = '{}.json'.format(uri)
+        uri = "{}.json".format(uri)
 
         resp = None
-        if 'GET' == method:
+        if "GET" == method:
             attempt = 0
             while attempt <= 5:
-                resp = requests.get(uri,
-                                    auth=self.auth,
-                                    headers=headers,
-                                    params=params,
-                                    stream=stream)
+                resp = requests.get(
+                    uri, auth=self.auth, headers=headers, params=params, stream=stream
+                )
 
                 if resp.status_code not in list(range(500, 505)):
                     # No need to retry for if not a server error type.
                     break
 
                 attempt += 1
-                params['acapi_retry'] = attempt
+                params["acapi_retry"] = attempt
                 time.sleep((attempt ** 2.0) / 10)
 
             # We need to unset the property or it sticks around.
-            if 'acapi_retry' in params:
-                del params['acapi_retry']
+            if "acapi_retry" in params:
+                del params["acapi_retry"]
 
-        if 'POST' == method:
+        if "POST" == method:
             jdata = json.dumps(data)
-            resp = requests.post(uri, auth=self.auth, headers=headers,
-                                 params=params, data=jdata)
+            resp = requests.post(
+                uri, auth=self.auth, headers=headers, params=params, data=jdata
+            )
             # This is a sledgehammer but fine grained invalidation is messy.
             if self.is_cache_enabled():
                 requests_cache.clear()
 
-        if 'DELETE' == method:
-            resp = requests.delete(uri, auth=self.auth, headers=headers,
-                                   params=params)
+        if "DELETE" == method:
+            resp = requests.delete(uri, auth=self.auth, headers=headers, params=params)
             # Quickest and easiest way to do this.
             if self.is_cache_enabled():
                 requests_cache.clear()
 
-        if hasattr(resp, 'from_cache') and resp.from_cache:
+        if hasattr(resp, "from_cache") and resp.from_cache:
             LOGGER.info("%s %s returned from cache", method, uri)
 
         self.last_response = resp
@@ -143,8 +149,10 @@ class AcquiaData(object):
         try:
             resp.raise_for_status()
         except requests.exceptions.HTTPError as exp:
-            LOGGER.info("Failed request response headers: \n%s",
-                        pformat(exp.response.headers, indent=2))
+            LOGGER.info(
+                "Failed request response headers: \n%s",
+                pformat(exp.response.headers, indent=2),
+            )
             raise
 
         if stream:
@@ -161,4 +169,4 @@ class AcquiaData(object):
         :return: Cache status.
         :rtype: bool.
         """
-        return hasattr(requests.Session(), 'cache')
+        return hasattr(requests.Session(), "cache")

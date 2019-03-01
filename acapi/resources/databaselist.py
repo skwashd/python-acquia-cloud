@@ -27,14 +27,14 @@ class DatabaseList(AcquiaList):
         Database
             The new database object.
         """
-        base_uri = re.sub(r'/envs/(.+)/dbs', '', self.uri)
-        uri = '{base_uri}/dbs'.format(base_uri=base_uri)
+        base_uri = re.sub(r"/envs/(.+)/dbs", "", self.uri)
+        uri = "{base_uri}/dbs".format(base_uri=base_uri)
 
-        task_data = self.request(method='POST', uri=uri, data={'db': name})
+        task_data = self.request(method="POST", uri=uri, data={"db": name})
         task = self.create_task(uri, task_data)
         task.wait()
 
-        db_uri = '{uri}/{name}'.format(uri=self.uri, name=name)
+        db_uri = "{uri}/{name}".format(uri=self.uri, name=name)
         db_obj = Database(db_uri, self.auth)
 
         self.__setitem__(name, db_obj)
@@ -45,7 +45,7 @@ class DatabaseList(AcquiaList):
         """Fetch and store database objects. """
         dbs = self.request(uri=self.uri)
         for db_obj in dbs:
-            name = str(db_obj['name'])
+            name = str(db_obj["name"])
             db_uri = self.get_resource_uri(name)
             self.__setitem__(name, Database(db_uri, self.auth, data=db_obj))
 
@@ -62,7 +62,7 @@ class DatabaseList(AcquiaList):
         str
             The database URI.
         """
-        return '{base_uri}/{name}'.format(base_uri=self.uri, name=name)
+        return "{base_uri}/{name}".format(base_uri=self.uri, name=name)
 
     def set_base_uri(self, base_uri):
         """Set the base URI for database resources.
@@ -72,5 +72,5 @@ class DatabaseList(AcquiaList):
         base_uri : str
             The base URI to use for generating the new URI.
         """
-        uri = '{}/dbs'.format(base_uri)
+        uri = "{}/dbs".format(base_uri)
         self.uri = uri

@@ -11,7 +11,7 @@ from datetime import timedelta
 from acapi import exceptions
 from acapi.resources.acquiaresource import AcquiaResource
 
-LOGGER = logging.getLogger('acapi.resources.task')
+LOGGER = logging.getLogger("acapi.resources.task")
 
 
 class Task(AcquiaResource):
@@ -21,9 +21,23 @@ class Task(AcquiaResource):
     POLL_INTERVAL = 3
 
     #: Valid task properties
-    valid_keys = ['body', 'completed', 'cookie', 'created', 'description',
-                  'hidden', 'id', 'percentage', 'queue', 'received',
-                  'recipient', 'result', 'sender', 'started', 'state']
+    valid_keys = [
+        "body",
+        "completed",
+        "cookie",
+        "created",
+        "description",
+        "hidden",
+        "id",
+        "percentage",
+        "queue",
+        "received",
+        "recipient",
+        "result",
+        "sender",
+        "started",
+        "state",
+    ]
 
     def __init__(self, uri, auth, data=None, hack_uri=True):
         """Constructor.
@@ -59,10 +73,10 @@ class Task(AcquiaResource):
         Task
             Task object.
         """
-        task_id = int(task_data['id'])
+        task_id = int(task_data["id"])
 
-        pattern = re.compile(r'/sites/([a-z\:0-9]+)(/.*)?')
-        task_uri = pattern.sub(r'/sites/\g<1>/tasks/{}'.format(task_id), uri)
+        pattern = re.compile(r"/sites/([a-z\:0-9]+)(/.*)?")
+        task_uri = pattern.sub(r"/sites/\g<1>/tasks/{}".format(task_id), uri)
 
         return task_uri
 
@@ -81,7 +95,7 @@ class Task(AcquiaResource):
             task = self.request()
 
         self.data = task
-        return task['completed'] is None
+        return task["completed"] is None
 
     def wait(self, timeout=1800):
         """Wait for a task to finish executing.
@@ -103,21 +117,22 @@ class Task(AcquiaResource):
         while self.pending():
             # Ensure the timeout hasn't been exceeded.
             if datetime.now() >= max_time:
-                msg = 'Time out exceeded while waiting for {tid}' \
-                      .format(tid=self.data['id'])
+                msg = "Time out exceeded while waiting for {tid}".format(
+                    tid=self.data["id"]
+                )
                 raise exceptions.AcquiaCloudTimeoutError(msg, self.data)
 
             time.sleep(self.POLL_INTERVAL)
 
         # Grab the cached response
         task = self.get()
-        if 'done' != task['state']:
+        if "done" != task["state"]:
             raise exceptions.AcquiaCloudTaskFailedException(
-                'Task {task_id} failed'.format(task_id=task['id']), task)
+                "Task {task_id} failed".format(task_id=task["id"]), task
+            )
 
         end = datetime.now()
         delta = end - start
-        LOGGER.info("Waited %.2f seconds for task to complete",
-                    delta.total_seconds())
+        LOGGER.info("Waited %.2f seconds for task to complete", delta.total_seconds())
 
         return self

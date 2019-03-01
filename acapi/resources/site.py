@@ -11,8 +11,14 @@ class Site(AcquiaResource):
     """Site (or subscription) resource."""
 
     #: Valid keys for site object.
-    valid_keys = ['title', 'name', 'production_mode', 'unix_username',
-                  'vcs_type', 'vcs_url']
+    valid_keys = [
+        "title",
+        "name",
+        "production_mode",
+        "unix_username",
+        "vcs_type",
+        "vcs_url",
+    ]
 
     def copy_code(self, source, target):
         """Copy code from one environment to another.
@@ -29,11 +35,11 @@ class Site(AcquiaResource):
         bool
             Was the code successfully copied?
         """
-        uri = '{base}/code-deploy/{source}/{target}'.format(
-            base=self.uri,
-            source=source, target=target)
+        uri = "{base}/code-deploy/{source}/{target}".format(
+            base=self.uri, source=source, target=target
+        )
 
-        task_data = self.request(uri=uri, method='POST')
+        task_data = self.request(uri=uri, method="POST")
         task = self.create_task(uri, task_data)
         task.wait()
 
@@ -52,7 +58,7 @@ class Site(AcquiaResource):
         Environment
             The environment resource object.
         """
-        uri = '{uri}/envs/{name}'.format(uri=self.uri, name=name)
+        uri = "{uri}/envs/{name}".format(uri=self.uri, name=name)
         return Environment(uri, self.auth)
 
     def environments(self):
@@ -79,7 +85,7 @@ class Site(AcquiaResource):
         Task
             The task resource object.
         """
-        uri = ('%s/tasks/%d' % (self.uri, task_id))
+        uri = "%s/tasks/%d" % (self.uri, task_id)
         return Task(uri, self.auth, hack_uri=False)
 
     def tasks(self):

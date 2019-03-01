@@ -21,7 +21,7 @@ class DomainList(AcquiaList):
 
         """
         uri = self.get_resource_uri(name)
-        task_data = self.request(uri=uri, method='POST')
+        task_data = self.request(uri=uri, method="POST")
         task = self.create_task(uri, task_data)
         task.wait()
 
@@ -35,7 +35,7 @@ class DomainList(AcquiaList):
         """Fetch and store domain objects."""
         domains = self.request(uri=self.uri)
         for domain in domains:
-            name = str(domain['name'])
+            name = str(domain["name"])
             domain_uri = self.get_resource_uri(name)
             self.__setitem__(name, Domain(domain_uri, self.auth, data=domain))
 
@@ -52,7 +52,7 @@ class DomainList(AcquiaList):
         str
             The server URI.
         """
-        return '{base_uri}/{fqdn}'.format(base_uri=self.uri, fqdn=fqdn)
+        return "{base_uri}/{fqdn}".format(base_uri=self.uri, fqdn=fqdn)
 
     def set_base_uri(self, base_uri):
         """Set the base URI for domain resources.
@@ -62,5 +62,5 @@ class DomainList(AcquiaList):
         base_uri : str
             The base URI to use for generating the new URI.
         """
-        uri = '{}/domains'.format(base_uri)
+        uri = "{}/domains".format(base_uri)
         self.uri = uri

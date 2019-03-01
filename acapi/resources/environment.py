@@ -15,8 +15,14 @@ class Environment(AcquiaResource):
     """Environment associated with a site."""
 
     #: Valid keys for environment object.
-    valid_keys = ['name', 'vcs_path', 'ssh_host', 'db_clusters',
-                  'default_domain', 'livedev']
+    valid_keys = [
+        "name",
+        "vcs_path",
+        "ssh_host",
+        "db_clusters",
+        "default_domain",
+        "livedev",
+    ]
 
     def copy_files(self, target):
         """Copy files to another environment.
@@ -31,11 +37,11 @@ class Environment(AcquiaResource):
         bool
             Were the files successfully copied?
         """
-        pattern = re.compile('/envs/(.*)')
-        base_uri = pattern.sub(r'/files-copy/\g<1>', self.uri)
-        uri = '{uri}/{target}'.format(uri=base_uri, target=target)
+        pattern = re.compile("/envs/(.*)")
+        base_uri = pattern.sub(r"/files-copy/\g<1>", self.uri)
+        uri = "{uri}/{target}".format(uri=base_uri, target=target)
 
-        task_data = self.request(uri=uri, method='POST')
+        task_data = self.request(uri=uri, method="POST")
         task = self.create_task(uri, task_data)
         task.wait()
 
@@ -54,7 +60,7 @@ class Environment(AcquiaResource):
         Database
             The requested database resource object.
         """
-        uri = ('%s/dbs/%s' % (self.uri, name))
+        uri = "%s/dbs/%s" % (self.uri, name)
         return Database(uri, self.auth)
 
     def dbs(self):
@@ -81,10 +87,10 @@ class Environment(AcquiaResource):
         bool
             Was the code successfully deployed?
         """
-        uri = '{}/code-deploy'.format(self.uri)
-        params = {'path': git_ref}
+        uri = "{}/code-deploy".format(self.uri)
+        params = {"path": git_ref}
 
-        task_data = self.request(uri=uri, method='POST', params=params)
+        task_data = self.request(uri=uri, method="POST", params=params)
         task = self.create_task(uri, task_data)
         task.wait()
 
@@ -103,7 +109,7 @@ class Environment(AcquiaResource):
         Domain
             The domain resource object.
         """
-        uri = '{uri}/domains/{name}'.format(uri=self.uri, name=name)
+        uri = "{uri}/domains/{name}".format(uri=self.uri, name=name)
         return Domain(uri, self.auth)
 
     def domains(self):
@@ -130,17 +136,17 @@ class Environment(AcquiaResource):
         Environment
             This environment object.
         """
-        action = 'enable'
+        action = "enable"
         params = {}
 
         if not enable:
-            action = 'disable'
-        uri = '{uri}/livedev/{action}'.format(uri=self.uri, action=action)
+            action = "disable"
+        uri = "{uri}/livedev/{action}".format(uri=self.uri, action=action)
 
         if not enable and discard:
-            params['discard'] = 1
+            params["discard"] = 1
 
-        task_data = self.request(uri=uri, method='POST', params=params)
+        task_data = self.request(uri=uri, method="POST", params=params)
         task = self.create_task(uri, task_data)
         task.wait()
 
@@ -154,7 +160,7 @@ class Environment(AcquiaResource):
         return Server object
 
         """
-        uri = ('%s/servers/%s', (self.uri, hostname))
+        uri = ("%s/servers/%s", (self.uri, hostname))
         return Server(uri, self.auth)
 
     def servers(self):

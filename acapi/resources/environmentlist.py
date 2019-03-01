@@ -16,7 +16,7 @@ class EnvironmentList(AcquiaList):
         """Fetch and store environment objects."""
         envs = self.request(uri=self.uri)
         for env in envs:
-            name = str(env['name'])
+            name = str(env["name"])
             env_uri = self.get_resource_uri(name)
             self.__setitem__(name, Environment(env_uri, self.auth, data=env))
 
@@ -33,7 +33,7 @@ class EnvironmentList(AcquiaList):
         str
             The resource URI.
         """
-        return '{base_uri}/{name}'.format(base_uri=self.uri, name=name)
+        return "{base_uri}/{name}".format(base_uri=self.uri, name=name)
 
     def set_base_uri(self, base_uri):
         """Set the base URI for server resources.
@@ -43,5 +43,5 @@ class EnvironmentList(AcquiaList):
         base_uri : str
             The base URI to use for generating the new URI.
         """
-        uri = '{}/envs'.format(base_uri)
+        uri = "{}/envs".format(base_uri)
         self.uri = uri

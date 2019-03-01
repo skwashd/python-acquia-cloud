@@ -41,7 +41,7 @@ class AcquiaList(AcquiaData, dict):
         str
             The resource URI.
         """
-        return '{base_uri}/{res}'.format(base_uri=self.uri, res=res)
+        return "{base_uri}/{res}".format(base_uri=self.uri, res=res)
 
     def first(self):
         """Retrieve the first item in the dictionary.
@@ -52,7 +52,7 @@ class AcquiaList(AcquiaData, dict):
             The first resource in the dictionary.
         """
         if not len(self):
-            raise AcquiaCloudNoDataException('No data available')
+            raise AcquiaCloudNoDataException("No data available")
 
         key = self.search_pos(0)
         return self[key]
@@ -74,7 +74,7 @@ class AcquiaList(AcquiaData, dict):
             The last resource in the dictionary.
         """
         if not len(self):
-            raise AcquiaCloudNoDataException('No data available')
+            raise AcquiaCloudNoDataException("No data available")
 
         key = self.search_pos(-1)
         return self[key]

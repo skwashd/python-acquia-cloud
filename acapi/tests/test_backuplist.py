@@ -26,41 +26,44 @@ class TestBackupList(BaseTest):
                 "started": 1331110381,
                 "type": "daily",
                 "link": "http://mysite.devcloud.acquia-sites.com/AH_DOWNLOAD?t=1342468716&prod=7386761671e68e517a74b7b790ef74d8a8fba7336dbc891cfef133bd29a7b238&d=/mnt/files/mysite.prod/backups/prod-mysite-mysite-2012-07-15.sql.gz",  # noqa: E501
-            },
+            }
         ]
 
         # Register the list.
-        url = 'https://cloudapi.acquia.com/v1/' \
-              'sites/prod:mysite/envs/dev/dbs/mysite/backups.json'
-
-        mocker.register_uri(
-            'GET',
-            url,
-            json=backups
+        url = (
+            "https://cloudapi.acquia.com/v1/"
+            "sites/prod:mysite/envs/dev/dbs/mysite/backups.json"
         )
+
+        mocker.register_uri("GET", url, json=backups)
 
         # Register the create
-        url = 'https://cloudapi.acquia.com/v1/' \
-              'sites/prod:mysite/envs/dev/dbs/mysite/backups.json'
-
-        mocker.register_uri(
-            'POST',
-            url,
-            json=self.generate_task_dictionary(1116, 'waiting', False),
+        url = (
+            "https://cloudapi.acquia.com/v1/"
+            "sites/prod:mysite/envs/dev/dbs/mysite/backups.json"
         )
 
-        task = self.generate_task_dictionary(1116, 'done', True)
+        mocker.register_uri(
+            "POST", url, json=self.generate_task_dictionary(1116, "waiting", False)
+        )
+
+        task = self.generate_task_dictionary(1116, "done", True)
         # Yo Dawg, I herd you like JSON, so I put a JSON in your JSON
         # so you can JSON while you JSON.
-        task['result'] = json.dumps({'backupid': 37})
+        task["result"] = json.dumps({"backupid": 37})
 
         # Register the task.
         mocker.register_uri(
-            'GET',
-            'https://cloudapi.acquia.com/v1/sites/prod:mysite/tasks/1116.json',
-            json=task
+            "GET",
+            "https://cloudapi.acquia.com/v1/sites/prod:mysite/tasks/1116.json",
+            json=task,
         )
 
-        backup = self.client.site('mysite').environment('dev').db(
-            'mysite').backups().create()
+        backup = (
+            self.client.site("mysite")
+            .environment("dev")
+            .db("mysite")
+            .backups()
+            .create()
+        )
         self.assertIsInstance(backup, Backup)

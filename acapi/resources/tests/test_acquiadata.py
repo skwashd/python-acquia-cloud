@@ -13,9 +13,9 @@ from acapi.resources.task import Task
 class TestAcquiaData(unittest.TestCase):
     """Tests the AcquiaData class."""
 
-    base_uri = 'http://example.com/api/'
+    base_uri = "http://example.com/api/"
 
-    domain_uri = base_uri + 'sites/prod:example/envs/test/domains/example.com'
+    domain_uri = base_uri + "sites/prod:example/envs/test/domains/example.com"
 
     def test_create_task(self, m):
         """Test create_task method."""
@@ -30,7 +30,7 @@ class TestAcquiaData(unittest.TestCase):
             "result": None,
             "sender": "cloud_api",
             "started": None,
-            "state": "received"
+            "state": "received",
         }
 
         adata = AcquiaData(self.domain_uri, None, {})
@@ -42,7 +42,7 @@ class TestAcquiaData(unittest.TestCase):
         """Test create_task method with empty string as task data."""
         adata = AcquiaData(self.domain_uri, None, {})
         with self.assertRaises(TypeError):
-            adata.create_task(self.domain_uri, '')
+            adata.create_task(self.domain_uri, "")
 
     def test_create_task_empty_dict(self, m):
         """Test create_task method with invalid data."""
@@ -53,9 +53,9 @@ class TestAcquiaData(unittest.TestCase):
     def test_get_404(self, m):
         """Tests a GET request that receives a 404 response."""
 
-        uri = "{base_uri}{path}".format(base_uri=self.base_uri, path='invalid')
+        uri = "{base_uri}{path}".format(base_uri=self.base_uri, path="invalid")
 
-        m.register_uri('GET', uri + '.json', status_code=400)
+        m.register_uri("GET", uri + ".json", status_code=400)
 
         data = {}
         adata = AcquiaData(uri, None, data)
@@ -65,22 +65,18 @@ class TestAcquiaData(unittest.TestCase):
 
     def test_get_500s_retry(self, m):
         """Tests retrying a GET request that receives 50x response."""
-        uri = "{base_uri}{path}".format(base_uri=self.base_uri, path='test')
+        uri = "{base_uri}{path}".format(base_uri=self.base_uri, path="test")
 
         m.register_uri(
-            'GET',
-            "{uri}{ext}".format(uri=uri, ext=".json"),
-            status_code=503
+            "GET", "{uri}{ext}".format(uri=uri, ext=".json"), status_code=503
         )
         m.register_uri(
-            'GET',
+            "GET",
             "{uri}{ext}".format(uri=uri, ext=".json?acapi_retry=1"),
-            status_code=504
+            status_code=504,
         )
         m.register_uri(
-            'GET',
-            "{uri}{ext}".format(uri=uri, ext=".json?acapi_retry=2"),
-            json={}
+            "GET", "{uri}{ext}".format(uri=uri, ext=".json?acapi_retry=2"), json={}
         )
 
         data = {}
@@ -91,12 +87,12 @@ class TestAcquiaData(unittest.TestCase):
 
     def test_get_response_content(self, m):
         uri = "{domain}{ext}".format(domain=self.domain_uri, ext=".json")
-        m.register_uri('GET', uri, status_code=200)
+        m.register_uri("GET", uri, status_code=200)
 
         adata = AcquiaData(self.domain_uri, None, {})
         response = adata.request(decode_json=False)
         self.assertIsInstance(response, bytes)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

@@ -12,7 +12,7 @@ class TestDatabaseList(BaseTest):
     """Tests the Acquia Cloud API db list class."""
 
     def test_create(self, mocker):
-        " "" Test create call. "" "
+        " " " Test create call. " " "
 
         json = [
             {
@@ -21,36 +21,30 @@ class TestDatabaseList(BaseTest):
                 "instance_name": "mysitedev",
                 "name": "mysite",
                 "password": "UeytUwwZxpfqutH",
-                "username": "mysitedev"
+                "username": "mysitedev",
             }
         ]
 
         # Register the list.
-        url = 'https://cloudapi.acquia.com/v1/' \
-              'sites/prod:mysite/envs/dev/dbs.json'
+        url = "https://cloudapi.acquia.com/v1/" "sites/prod:mysite/envs/dev/dbs.json"
 
-        mocker.register_uri(
-            'GET',
-            url,
-            json=json
-        )
+        mocker.register_uri("GET", url, json=json)
 
         # Register the create
         mocker.register_uri(
-            'POST',
-            'https://cloudapi.acquia.com/v1/sites/prod:mysite/dbs.json',
-            json=self.generate_task_dictionary(2346, 'waiting', False),
+            "POST",
+            "https://cloudapi.acquia.com/v1/sites/prod:mysite/dbs.json",
+            json=self.generate_task_dictionary(2346, "waiting", False),
         )
 
         # Register the task.
         mocker.register_uri(
-            'GET',
-            'https://cloudapi.acquia.com/v1/sites/prod:mysite/tasks/2346.json',
-            json=self.generate_task_dictionary(2346, 'done', True),
+            "GET",
+            "https://cloudapi.acquia.com/v1/sites/prod:mysite/tasks/2346.json",
+            json=self.generate_task_dictionary(2346, "done", True),
         )
 
-        db = self.client.site('mysite').environment('dev')\
-            .dbs().create('newdb')
+        db = self.client.site("mysite").environment("dev").dbs().create("newdb")
         self.assertIsInstance(db, Database)
 
     def test_get(self, mocker):
@@ -62,18 +56,13 @@ class TestDatabaseList(BaseTest):
                 "instance_name": "mysitedev",
                 "name": "mysite",
                 "password": "UeytUwwZxpfqutH",
-                "username": "mysitedev"
+                "username": "mysitedev",
             }
         ]
 
-        url = 'https://cloudapi.acquia.com/v1/' \
-              'sites/prod:mysite/envs/dev/dbs.json'
+        url = "https://cloudapi.acquia.com/v1/" "sites/prod:mysite/envs/dev/dbs.json"
 
-        mocker.register_uri(
-            'GET',
-            url,
-            json=json
-        )
+        mocker.register_uri("GET", url, json=json)
 
-        dblist = self.client.site('mysite').environment('dev').dbs()
+        dblist = self.client.site("mysite").environment("dev").dbs()
         self.assertIsInstance(dblist, DatabaseList)

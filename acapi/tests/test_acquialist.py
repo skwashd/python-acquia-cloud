@@ -20,14 +20,14 @@ class TestAcquiaList(BaseTest):
 
     def test_delitem(self, mocker):
         """Test del item call."""
-        val = 'value'
-        alist = AcquiaList(None, False, {'key': val})
+        val = "value"
+        alist = AcquiaList(None, False, {"key": val})
 
-        self.assertEqual(alist['key'], val)
+        self.assertEqual(alist["key"], val)
 
-        del (alist['key'])
+        del (alist["key"])
         with self.assertRaises(KeyError):
-            alist['key']
+            alist["key"]
 
     def test_first_no_data(self, mocker):
         """Test calling first with an empty object."""
@@ -42,7 +42,7 @@ class TestAcquiaList(BaseTest):
     def test_set_base_uri(self, mocker):
         """Test setting the base uri."""
 
-        uri = 'https://google.com'
+        uri = "https://google.com"
         self.assertNotEqual(self.alist.uri, uri)
 
         self.alist.set_base_uri(uri)

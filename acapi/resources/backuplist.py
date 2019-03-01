@@ -16,15 +16,15 @@ class BackupList(AcquiaList):
 
     def create(self, timeout=3600):
         """Create a new backup."""
-        task_data = self.request(method='POST')
+        task_data = self.request(method="POST")
 
         task = self.create_task(self.uri, task_data)
         task.wait(timeout)
 
         # For some reason Acquia encodes JSON as a string in a JSON object.
-        result = json.loads(task['result'])
-        backup_id = result['backupid']
-        uri = '{uri}/{backup_id}'.format(uri=self.uri, backup_id=backup_id)
+        result = json.loads(task["result"])
+        backup_id = result["backupid"]
+        uri = "{uri}/{backup_id}".format(uri=self.uri, backup_id=backup_id)
         backup = Backup(uri, self.auth)
 
         self.__setitem__(backup_id, backup)
@@ -35,7 +35,7 @@ class BackupList(AcquiaList):
         """Fetch and store database object."""
         backups = self.request(uri=self.uri)
         for backup in backups:
-            backup_id = int(backup['id'])
+            backup_id = int(backup["id"])
             uri = self.get_resource_uri(backup_id)
             self.__setitem__(backup_id, Backup(uri, self.auth, data=backup))
 
@@ -47,5 +47,5 @@ class BackupList(AcquiaList):
         base_uri : str
             The base URI to use for generating the new URI.
         """
-        uri = '{}/backups'.format(base_uri)
+        uri = "{}/backups".format(base_uri)
         self.uri = uri

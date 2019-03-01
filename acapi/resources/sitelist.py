@@ -16,11 +16,11 @@ class SiteList(AcquiaList):
         """Fetch and store site objects."""
         sites = self.request(uri=self.uri)
         for site in sites:
-            realm, name = str(site).split(':')
+            realm, name = str(site).split(":")
             site_uri = self.get_resource_uri(name, realm=realm)
             self.__setitem__(name, Site(site_uri, self.auth))
 
-    def get_resource_uri(self, name, realm='prod'):
+    def get_resource_uri(self, name, realm="prod"):
         """Generate the server URI.
 
         Parameters
@@ -33,8 +33,9 @@ class SiteList(AcquiaList):
         str
             The site URI.
         """
-        return '{base_uri}/{realm}:{name}'.format(base_uri=self.uri,
-                                                  realm=realm, name=name)
+        return "{base_uri}/{realm}:{name}".format(
+            base_uri=self.uri, realm=realm, name=name
+        )
 
     def set_base_uri(self, base_uri):
         """Set the base URI for site resources.
@@ -44,5 +45,5 @@ class SiteList(AcquiaList):
         base_uri : str
             The base URI to use for generating the new URI.
         """
-        uri = '{}/sites'.format(base_uri)
+        uri = "{}/sites".format(base_uri)
         self.uri = uri

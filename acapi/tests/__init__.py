@@ -2,6 +2,4 @@
 
 from acapi.tests.basetest import BaseTest
 
-__all__ = [
-    'BaseTest',
-]
+__all__ = ["BaseTest"]

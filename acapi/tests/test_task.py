@@ -21,46 +21,39 @@ class TestTask(BaseTest):
         """Tests fetching a task object."""
 
         tid = 289466
-        site = 'mysite'
-        json = self.generate_task_dictionary(tid, state='error')
-        url = 'https://cloudapi.acquia.com/v1/' \
-              'sites/prod:{site}/tasks/{tid}.json'.format(tid=tid, site=site)
-
-        mocker.register_uri(
-            'GET',
-            url,
-            json=json
+        site = "mysite"
+        json = self.generate_task_dictionary(tid, state="error")
+        url = (
+            "https://cloudapi.acquia.com/v1/"
+            "sites/prod:{site}/tasks/{tid}.json".format(tid=tid, site=site)
         )
 
+        mocker.register_uri("GET", url, json=json)
+
         task = self.client.site(site).task(tid)
-        self.assertEqual(task['id'], tid)
-        self.assertEqual(task['state'], 'error')
+        self.assertEqual(task["id"], tid)
+        self.assertEqual(task["state"], "error")
 
     def test_fail(self, mocker):
         """Tests task failure."""
 
         tid = 289466
-        site = 'mysite'
-        first_response = self.generate_task_dictionary(tid,
-                                                       state='waiting',
-                                                       completed=False)
-
-        exception_response = self.generate_task_dictionary(tid,
-                                                           state='failed',
-                                                           completed=True)
-
-        responses = [
-            {'json': first_response},
-            {'json': exception_response},
-        ]
-        url = 'https://cloudapi.acquia.com/v1/' \
-              'sites/prod:{site}/tasks/{tid}.json'.format(tid=tid, site=site)
-
-        mocker.register_uri(
-            'GET',
-            url,
-            responses
+        site = "mysite"
+        first_response = self.generate_task_dictionary(
+            tid, state="waiting", completed=False
         )
+
+        exception_response = self.generate_task_dictionary(
+            tid, state="failed", completed=True
+        )
+
+        responses = [{"json": first_response}, {"json": exception_response}]
+        url = (
+            "https://cloudapi.acquia.com/v1/"
+            "sites/prod:{site}/tasks/{tid}.json".format(tid=tid, site=site)
+        )
+
+        mocker.register_uri("GET", url, responses)
 
         with self.assertRaises(exceptions.AcquiaCloudTaskFailedException):
             self.client.site(site).task(tid).wait()
@@ -70,23 +63,19 @@ class TestTask(BaseTest):
         """Tests task timeout exceeded."""
 
         tid = 289466
-        site = 'mysite'
+        site = "mysite"
 
-        exception_response = self.generate_task_dictionary(tid,
-                                                           state='started',
-                                                           completed=None)
-
-        responses = [
-            {'json': exception_response},
-        ]
-        url = 'https://cloudapi.acquia.com/v1/' \
-              'sites/prod:{site}/tasks/{tid}.json'.format(tid=tid, site=site)
-
-        mocker.register_uri(
-            'GET',
-            url,
-            responses
+        exception_response = self.generate_task_dictionary(
+            tid, state="started", completed=None
         )
+
+        responses = [{"json": exception_response}]
+        url = (
+            "https://cloudapi.acquia.com/v1/"
+            "sites/prod:{site}/tasks/{tid}.json".format(tid=tid, site=site)
+        )
+
+        mocker.register_uri("GET", url, responses)
 
         with self.assertRaises(exceptions.AcquiaCloudTimeoutError):
             self.client.site(site).task(tid).wait(0)
@@ -95,24 +84,22 @@ class TestTask(BaseTest):
         """Tests waiting for a task to complete."""
 
         tid = 289466
-        site = 'mysite'
-        first_response = self.generate_task_dictionary(tid,
-                                                       state='waiting',
-                                                       completed=False)
-
-        responses = [
-            {'json': first_response},
-            {'json': self.generate_task_dictionary(tid)},
-        ]
-        url = 'https://cloudapi.acquia.com/v1/' \
-              'sites/prod:{site}/tasks/{tid}.json'.format(tid=tid, site=site)
-
-        mocker.register_uri(
-            'GET',
-            url,
-            responses
+        site = "mysite"
+        first_response = self.generate_task_dictionary(
+            tid, state="waiting", completed=False
         )
 
+        responses = [
+            {"json": first_response},
+            {"json": self.generate_task_dictionary(tid)},
+        ]
+        url = (
+            "https://cloudapi.acquia.com/v1/"
+            "sites/prod:{site}/tasks/{tid}.json".format(tid=tid, site=site)
+        )
+
+        mocker.register_uri("GET", url, responses)
+
         task = self.client.site(site).task(tid).wait()
-        self.assertEqual(task['id'], tid)
-        self.assertEqual(task['state'], 'done')
+        self.assertEqual(task["id"], tid)
+        self.assertEqual(task["state"], "done")

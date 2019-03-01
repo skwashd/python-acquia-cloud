@@ -16,10 +16,10 @@ class BaseTest(unittest.TestCase):
     # ACAPI Client
     client = None
 
-    def generate_task_dictionary(self, tid, state='done', completed=True):
+    def generate_task_dictionary(self, tid, state="done", completed=True):
         """Generates a task dictionary."""
 
-        known_states = ['done', 'error', 'started', 'received', 'waiting']
+        known_states = ["done", "error", "started", "received", "waiting"]
 
         now = int(time.time())
 
@@ -36,13 +36,12 @@ class BaseTest(unittest.TestCase):
             "created": now,
             "description": "Copy files from dev to prod",
             "id": tid,
-            "logs": "[02:20:58] [02:20:58] Started\n"
-                    "[02:21:00] [02:21:00] Failure\n",
+            "logs": "[02:20:58] [02:20:58] Started\n" "[02:21:00] [02:21:00] Failure\n",
             "queue": "files-migrate",
             "result": None,
             "sender": "cloud_api",
             "started": now,
-            "state": state
+            "state": state,
         }
 
         return task
@@ -52,6 +51,6 @@ class BaseTest(unittest.TestCase):
 
         session = requests.Session()
         adapter = requests_mock.Adapter()
-        session.mount('mock', adapter)
+        session.mount("mock", adapter)
 
-        self.client = Client('test', 'test', cache=None)
+        self.client = Client("test", "test", cache=None)
