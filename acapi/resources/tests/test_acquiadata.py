@@ -38,6 +38,15 @@ class TestAcquiaData(unittest.TestCase):
 
         self.assertIsInstance(atask, Task)
 
+    def test_session(self, m):
+        http_request = AcquiaData(self.domain_uri, None, {})
+        http_request_1 = AcquiaData(self.domain_uri, None, {})
+        self.assertEqual(id(http_request.session), id(http_request_1.session))
+
+    def test_get_session(self, m):
+        request_session = AcquiaData(self.domain_uri, None, {})._get_session()
+        self.assertEqual(AcquiaData.SESSION, request_session)
+
     def test_create_task_empty_string(self, m):
         """Test create_task method with empty string as task data."""
         adata = AcquiaData(self.domain_uri, None, {})
