@@ -20,6 +20,8 @@ class AcquiaData(object):
     RAW_AGENT = "Acquia Cloud API Client/{mver} (Python {pver})"
     USER_AGENT = RAW_AGENT.format(mver=__version__, pver=python_version())
 
+    SESSION = None
+
     def __init__(self, uri, auth, data=None):
         """Constructor.
 
@@ -36,6 +38,17 @@ class AcquiaData(object):
         self.auth = auth
         self.data = data
         self.last_response = None
+
+        self.session = self._get_session()
+
+    def _get_session(self):
+        """Generate new session object.
+
+        :return: requests.Session
+        """
+        if not AcquiaData.SESSION:
+            AcquiaData.SESSION = requests.Session()
+        return AcquiaData.SESSION
 
     def create_task(self, uri, data):
         """Create a new task object from a responses response object.
@@ -110,7 +123,7 @@ class AcquiaData(object):
         if "GET" == method:
             attempt = 0
             while attempt <= 5:
-                resp = requests.get(
+                resp = self.session.get(
                     uri, auth=self.auth, headers=headers, params=params, stream=stream
                 )
 
@@ -128,7 +141,7 @@ class AcquiaData(object):
 
         if "POST" == method:
             jdata = json.dumps(data)
-            resp = requests.post(
+            resp = self.session.post(
                 uri, auth=self.auth, headers=headers, params=params, data=jdata
             )
             # This is a sledgehammer but fine grained invalidation is messy.
@@ -136,7 +149,7 @@ class AcquiaData(object):
                 requests_cache.clear()
 
         if "DELETE" == method:
-            resp = requests.delete(uri, auth=self.auth, headers=headers, params=params)
+            resp = self.session.delete(uri, auth=self.auth, headers=headers, params=params)
             # Quickest and easiest way to do this.
             if self.is_cache_enabled():
                 requests_cache.clear()
