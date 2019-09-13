@@ -16,7 +16,7 @@ setup(
     author="Dave Hall",
     author_email="me@davehall.com.au",
     url="http://github.com/skwashd/python-acquia-cloud",
-    install_requires=["requests==2.22.0", "requests-cache==0.4.13"],
+    install_requires=["requests==2.22.0", "requests-cache==0.5.2"],
     license="MIT",
     classifiers=[
         "Development Status :: 4 - Beta",
