@@ -13,6 +13,7 @@ setup(
     version="0.8.1",
     description="Acquia Cloud API client.",
     long_description=long_description,
+    long_description_content_type="text/markdown",
     author="Dave Hall",
     author_email="me@davehall.com.au",
     url="http://github.com/skwashd/python-acquia-cloud",
