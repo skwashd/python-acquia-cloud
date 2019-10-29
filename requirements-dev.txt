@@ -1,7 +1,7 @@
 # Require base requirements first.
 -r requirements.txt
 # Now for the dev specific stuff
-black==19.3b0
+black==19.10b0
 coverage==4.5.4
 coveralls==1.8.2
 flake8==3.7.9
