@@ -2,6 +2,8 @@
 
 import json
 import logging
+
+import backoff
 import requests
 import requests_cache
 import time
@@ -75,6 +77,9 @@ class AcquiaData(object):
         """Fetch the last response object. """
         return self.last_response
 
+    @backoff.on_exception(
+        backoff.expo, requests.exceptions.RequestException, max_time=10
+    )
     def request(
         self,
         uri=None,
