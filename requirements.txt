@@ -1,4 +1,4 @@
 backoff==1.10.0
 requests==2.23.0
 requests-cache==0.5.2
-setuptools==45.3.0
+setuptools==46.0.0
